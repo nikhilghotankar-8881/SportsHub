@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      Welcome back, <span class="text-gradient">{{ current_user.name }}</span> 👋
+    </h1>
+    <p class="page-subtitle">Here's your SportsHub overview for today.</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="dashboard-card text-center">
+        <div class="card-icon icon-blue mx-auto"><i class="bi bi-cart-fill" style="color:#00c6ff;"></i></div>
+        <span class="card-value">0</span>
+        <span class="card-label">Orders</span>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="dashboard-card text-center">
+        <div class="card-icon icon-orange mx-auto"><i class="bi bi-heart-fill" style="color:#ff6b35;"></i></div>
+        <span class="card-value">0</span>
+        <span class="card-label">Wishlist Items</span>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="dashboard-card text-center">
+        <div class="card-icon icon-green mx-auto"><i class="bi bi-star-fill" style="color:#10b981;"></i></div>
+        <span class="card-value">0</span>
+        <span class="card-label">Reviews</span>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="dashboard-card text-center">
+        <div class="card-icon icon-purple mx-auto"><i class="bi bi-people-fill" style="color:#8b5cf6;"></i></div>
+        <span class="card-value">1</span>
+        <span class="card-label">Community</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Summary -->
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="dashboard-card h-100">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;">
+          <i class="bi bi-person-circle" style="color:var(--primary);"></i> Profile Summary
+        </h5>
+        <div style="display:flex;flex-direction:column;gap:0.8rem;">
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.6rem;">
+            <span style="color:var(--text-secondary);font-size:0.88rem;">Full Name</span>
+            <span style="font-weight:600;">{{ current_user.name }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.6rem;">
+            <span style="color:var(--text-secondary);font-size:0.88rem;">Email</span>
+            <span style="font-weight:600;">{{ current_user.email }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-secondary);font-size:0.88rem;">Account Status</span>
+            <span style="color:var(--success);font-weight:600;">
+              <i class="bi bi-check-circle-fill"></i> Active
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="dashboard-card h-100">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;">
+          <i class="bi bi-lightning-charge-fill" style="color:var(--accent);"></i> Quick Actions
+        </h5>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <a href="{{ url_for('main.index') }}" class="btn-outline-custom" id="dashboard-home-btn"
+             style="justify-content:center;text-decoration:none;">
+            <i class="bi bi-house-door"></i> Back to Home
+          </a>
+          <a href="{{ url_for('auth.logout') }}" class="btn-primary-custom" id="dashboard-logout-btn"
+             style="justify-content:center;text-decoration:none;">
+            <i class="bi bi-box-arrow-right"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block title %}My Cart – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <!-- ── Page Header ── -->
+  <div class="page-header" style="display:flex;align-items:center;
+       justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-cart3" style="color:var(--primary);"></i>
+        My <span class="text-gradient">Cart</span>
+      </h1>
+      <p class="page-subtitle">
+        {% if item_count > 0 %}
+          {{ item_count }} item{{ 's' if item_count != 1 }} in your cart
+        {% else %}
+          Your cart is empty
+        {% endif %}
+      </p>
+    </div>
+    {% if items %}
+      <a href="{{ url_for('products.products') }}"
+         class="btn-outline-custom" id="continue-shopping-btn">
+        <i class="bi bi-arrow-left"></i> Continue Shopping
+      </a>
+    {% endif %}
+  </div>
+
+  {% if items %}
+  <div class="row g-4 align-items-start">
+
+    <!-- ══════════════════════════════════════════
+         Cart Table  (col-lg-8)
+    ══════════════════════════════════════════ -->
+    <div class="col-lg-8">
+      <div class="dashboard-card" style="padding:0;overflow:hidden;">
+
+        <div class="table-responsive">
+          <table class="table mb-0" id="cart-table"
+                 style="color:var(--text-primary);border-color:var(--border);">
+
+            <!-- ── Table Head ── -->
+            <thead>
+              <tr style="background:var(--bg-card-2);border-bottom:2px solid var(--border);">
+                <th style="padding:1rem 1.2rem;font-size:0.75rem;font-weight:700;
+                           text-transform:uppercase;letter-spacing:1px;
+                           color:var(--text-secondary);border:none;width:90px;">
+                  Image
+                </th>
+                <th style="padding:1rem 0.8rem;font-size:0.75rem;font-weight:700;
+                           text-transform:uppercase;letter-spacing:1px;
+                           color:var(--text-secondary);border:none;">
+                  Product
+                </th>
+                <th style="padding:1rem 0.8rem;font-size:0.75rem;font-weight:700;
+                           text-transform:uppercase;letter-spacing:1px;
+                           color:var(--text-secondary);border:none;text-align:center;">
+                  Price
+                </th>
+                <th style="padding:1rem 0.8rem;font-size:0.75rem;font-weight:700;
+                           text-transform:uppercase;letter-spacing:1px;
+                           color:var(--text-secondary);border:none;text-align:center;
+                           min-width:160px;">
+                  Quantity
+                </th>
+                <th style="padding:1rem 0.8rem;font-size:0.75rem;font-weight:700;
+                           text-transform:uppercase;letter-spacing:1px;
+                           color:var(--text-secondary);border:none;text-align:right;">
+                  Total
+                </th>
+                <th style="padding:1rem 0.8rem;font-size:0.75rem;font-weight:700;
+                           text-transform:uppercase;letter-spacing:1px;
+                           color:var(--text-secondary);border:none;text-align:center;">
+                  Remove
+                </th>
+              </tr>
+            </thead>
+
+            <!-- ── Table Body ── -->
+            <tbody>
+              {% for item in items %}
+              <tr id="cart-row-{{ item.id }}"
+                  style="border-bottom:1px solid var(--border);
+                         transition:background 0.2s ease;"
+                  onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+                  onmouseout="this.style.background='transparent'">
+
+                <!-- Image -->
+                <td style="padding:1rem 1.2rem;vertical-align:middle;border:none;">
+                  <a href="{{ url_for('products.product_detail', product_id=item.product.id) }}">
+                    {% if item.product.image %}
+                      <img src="{{ item.product.image }}"
+                           alt="{{ item.product.name }}"
+                           style="width:72px;height:72px;object-fit:cover;
+                                  border-radius:10px;border:1px solid var(--border);
+                                  transition:transform 0.2s ease;"
+                           onmouseover="this.style.transform='scale(1.05)'"
+                           onmouseout="this.style.transform='scale(1)'" />
+                    {% else %}
+                      <div style="width:72px;height:72px;border-radius:10px;
+                                  background:var(--bg-card-2);border:1px solid var(--border);
+                                  display:flex;align-items:center;justify-content:center;
+                                  font-size:1.8rem;">🏅</div>
+                    {% endif %}
+                  </a>
+                </td>
+
+                <!-- Product Name -->
+                <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;">
+                  {% if item.product.category %}
+                    <span style="font-size:0.7rem;font-weight:700;color:var(--primary);
+                                 text-transform:uppercase;letter-spacing:0.8px;
+                                 display:block;margin-bottom:0.2rem;">
+                      {{ item.product.category }}
+                    </span>
+                  {% endif %}
+                  <a href="{{ url_for('products.product_detail', product_id=item.product.id) }}"
+                     style="font-family:'Outfit',sans-serif;font-weight:700;
+                            font-size:0.95rem;color:var(--text-primary);
+                            text-decoration:none;display:block;
+                            transition:color 0.2s;"
+                     onmouseover="this.style.color='var(--primary)'"
+                     onmouseout="this.style.color='var(--text-primary)'">
+                    {{ item.product.name }}
+                  </a>
+                  {% if item.product.in_stock %}
+                    <span style="font-size:0.72rem;color:var(--success);margin-top:0.2rem;display:block;">
+                      <i class="bi bi-check-circle-fill"></i>
+                      {{ item.product.stock }} in stock
+                    </span>
+                  {% else %}
+                    <span style="font-size:0.72rem;color:var(--danger);margin-top:0.2rem;display:block;">
+                      <i class="bi bi-x-circle-fill"></i> Out of stock
+                    </span>
+                  {% endif %}
+                </td>
+
+                <!-- Unit Price -->
+                <td style="padding:1rem 0.8rem;vertical-align:middle;
+                           border:none;text-align:center;">
+                  <span style="font-family:'Outfit',sans-serif;font-weight:700;
+                               font-size:0.95rem;color:var(--text-primary);">
+                    {{ item.product.formatted_price }}
+                  </span>
+                </td>
+
+                <!-- Quantity (stepper + Update button) -->
+                <td style="padding:1rem 0.8rem;vertical-align:middle;
+                           border:none;text-align:center;">
+                  <form method="POST"
+                        action="{{ url_for('cart.update', cart_item_id=item.id) }}"
+                        id="update-form-{{ item.id }}"
+                        style="display:inline-flex;align-items:center;gap:0.4rem;">
+
+                    <!-- ± stepper -->
+                    <div style="display:inline-flex;align-items:center;
+                                border:1.5px solid var(--border);
+                                border-radius:var(--radius);overflow:hidden;">
+                      <button type="button"
+                              onclick="stepCart(this, -1)"
+                              id="dec-{{ item.id }}"
+                              style="background:var(--bg-card-2);border:none;
+                                     color:var(--text-primary);padding:0.38rem 0.7rem;
+                                     cursor:pointer;font-size:1rem;line-height:1;
+                                     transition:background 0.2s;"
+                              onmouseover="this.style.background='rgba(0,198,255,0.12)'"
+                              onmouseout="this.style.background='var(--bg-card-2)'">−</button>
+
+                      <input type="number"
+                             name="quantity"
+                             value="{{ item.quantity }}"
+                             min="0"
+                             max="{{ item.product.stock }}"
+                             id="cart-qty-{{ item.id }}"
+                             style="width:44px;text-align:center;background:transparent;
+                                    border:none;color:var(--text-primary);
+                                    font-size:0.9rem;font-weight:700;outline:none;" />
+
+                      <button type="button"
+                              onclick="stepCart(this, 1)"
+                              id="inc-{{ item.id }}"
+                              style="background:var(--bg-card-2);border:none;
+                                     color:var(--text-primary);padding:0.38rem 0.7rem;
+                                     cursor:pointer;font-size:1rem;line-height:1;
+                                     transition:background 0.2s;"
+                              onmouseover="this.style.background='rgba(0,198,255,0.12)'"
+                              onmouseout="this.style.background='var(--bg-card-2)'">+</button>
+                    </div>
+
+                    <!-- Update button -->
+                    <button type="submit"
+                            class="btn btn-sm"
+                            id="update-btn-{{ item.id }}"
+                            title="Update quantity"
+                            style="background:rgba(0,198,255,0.1);
+                                   border:1.5px solid rgba(0,198,255,0.3);
+                                   color:var(--primary);border-radius:8px;
+                                   padding:0.38rem 0.65rem;font-size:0.82rem;
+                                   transition:all 0.2s;"
+                            onmouseover="this.style.background='rgba(0,198,255,0.2)'"
+                            onmouseout="this.style.background='rgba(0,198,255,0.1)'">
+                      <i class="bi bi-arrow-clockwise"></i> Update
+                    </button>
+
+                  </form>
+                </td>
+
+                <!-- Row Total -->
+                <td style="padding:1rem 0.8rem;vertical-align:middle;
+                           border:none;text-align:right;">
+                  <span style="font-family:'Outfit',sans-serif;font-size:1.05rem;
+                               font-weight:800;background:var(--gradient-accent);
+                               -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                               background-clip:text;display:block;">
+                    {{ item.formatted_subtotal }}
+                  </span>
+                  <span style="font-size:0.72rem;color:var(--text-muted);">
+                    × {{ item.quantity }} units
+                  </span>
+                </td>
+
+                <!-- Remove -->
+                <td style="padding:1rem 0.8rem;vertical-align:middle;
+                           border:none;text-align:center;">
+                  <form method="POST"
+                        action="{{ url_for('cart.remove', cart_item_id=item.id) }}"
+                        id="remove-form-{{ item.id }}">
+                    <button type="submit"
+                            class="btn btn-sm"
+                            id="remove-btn-{{ item.id }}"
+                            title="Remove {{ item.product.name }}"
+                            onclick="return confirm('Remove \'{{ item.product.name }}\' from your cart?')"
+                            style="background:rgba(239,68,68,0.08);
+                                   border:1.5px solid rgba(239,68,68,0.25);
+                                   color:#f87171;border-radius:8px;
+                                   padding:0.38rem 0.7rem;font-size:0.85rem;
+                                   transition:all 0.2s;"
+                            onmouseover="this.style.background='rgba(239,68,68,0.18)'"
+                            onmouseout="this.style.background='rgba(239,68,68,0.08)'">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </form>
+                </td>
+
+              </tr>
+              {% endfor %}
+            </tbody>
+
+            <!-- ── Table Foot – Grand Total ── -->
+            <tfoot>
+              <tr style="background:var(--bg-card-2);border-top:2px solid var(--border);">
+                <td colspan="4"
+                    style="padding:1rem 1.2rem;border:none;
+                           font-size:0.88rem;color:var(--text-secondary);">
+                  <i class="bi bi-truck"></i>
+                  Free delivery on orders above ₹999 &nbsp;·&nbsp;
+                  <i class="bi bi-shield-lock-fill" style="color:var(--success);"></i>
+                  Secure checkout
+                </td>
+                <td style="padding:1rem 0.8rem;border:none;text-align:right;">
+                  <span style="font-size:0.75rem;color:var(--text-muted);
+                               text-transform:uppercase;letter-spacing:1px;
+                               display:block;margin-bottom:0.2rem;">
+                    Grand Total
+                  </span>
+                  <span style="font-family:'Outfit',sans-serif;font-size:1.5rem;
+                               font-weight:800;background:var(--gradient-accent);
+                               -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                               background-clip:text;">
+                    ₹{{ "%.2f"|format(total) }}
+                  </span>
+                </td>
+                <td style="border:none;"></td>
+              </tr>
+            </tfoot>
+
+          </table>
+        </div><!-- /table-responsive -->
+      </div><!-- /dashboard-card -->
+    </div><!-- /col-lg-8 -->
+
+
+    <!-- ══════════════════════════════════════════
+         Order Summary Panel  (col-lg-4)
+    ══════════════════════════════════════════ -->
+    <div class="col-lg-4">
+      <div class="dashboard-card" style="position:sticky;top:80px;">
+
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;
+                   font-size:1.1rem;margin-bottom:1.4rem;">
+          <i class="bi bi-receipt" style="color:var(--primary);"></i> Order Summary
+        </h5>
+
+        <!-- Line-item breakdown -->
+        <div style="display:flex;flex-direction:column;gap:0.65rem;margin-bottom:1.2rem;">
+          {% for item in items %}
+            <div style="display:flex;justify-content:space-between;
+                        align-items:center;font-size:0.87rem;">
+              <span style="color:var(--text-secondary);overflow:hidden;
+                           text-overflow:ellipsis;white-space:nowrap;max-width:58%;">
+                {{ item.product.name }}
+                <span style="color:var(--text-muted);">×{{ item.quantity }}</span>
+              </span>
+              <span style="font-weight:600;white-space:nowrap;">
+                {{ item.formatted_subtotal }}
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Divider + total -->
+        <div style="border-top:1px solid var(--border);padding-top:1rem;margin-bottom:1.4rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="color:var(--text-secondary);font-size:0.9rem;">Grand Total</span>
+            <span style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;
+                         background:var(--gradient-accent);-webkit-background-clip:text;
+                         -webkit-text-fill-color:transparent;background-clip:text;">
+              ₹{{ "%.2f"|format(total) }}
+            </span>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.78rem;margin-top:0.5rem;">
+            <i class="bi bi-truck"></i> Free delivery on orders above ₹999
+          </p>
+        </div>
+
+        <!-- Checkout CTA -->
+        <a href="{{ url_for('checkout.checkout') }}"
+           class="btn-add-cart" id="checkout-btn"
+           style="width:100%;justify-content:center;text-decoration:none;">
+          <i class="bi bi-bag-check"></i> Proceed to Checkout
+        </a>
+
+        <div style="margin-top:0.8rem;">
+          <a href="{{ url_for('products.products') }}"
+             class="btn-outline-custom" id="keep-shopping-btn"
+             style="width:100%;justify-content:center;
+                    text-decoration:none;font-size:0.85rem;">
+            <i class="bi bi-arrow-left"></i> Keep Shopping
+          </a>
+        </div>
+
+        <!-- Trust badges -->
+        <div style="display:flex;flex-direction:column;gap:0.45rem;
+                    margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid var(--border);">
+          <span style="font-size:0.78rem;color:var(--text-muted);
+                       display:flex;gap:0.4rem;align-items:center;">
+            <i class="bi bi-shield-lock-fill" style="color:var(--success);"></i> Secure checkout
+          </span>
+          <span style="font-size:0.78rem;color:var(--text-muted);
+                       display:flex;gap:0.4rem;align-items:center;">
+            <i class="bi bi-arrow-counterclockwise" style="color:var(--accent);"></i> 7-day easy returns
+          </span>
+          <span style="font-size:0.78rem;color:var(--text-muted);
+                       display:flex;gap:0.4rem;align-items:center;">
+            <i class="bi bi-headset" style="color:var(--primary);"></i> 24/7 support
+          </span>
+        </div>
+
+      </div><!-- /dashboard-card -->
+    </div><!-- /col-lg-4 -->
+
+  </div><!-- /row -->
+
+  {% else %}
+
+  <!-- ── Empty Cart ── -->
+  <div class="empty-state" style="min-height:55vh;display:flex;flex-direction:column;
+                                   align-items:center;justify-content:center;">
+    <div class="empty-state-icon">🛒</div>
+    <h4>Your cart is empty</h4>
+    <p style="max-width:340px;">
+      Browse our sports collection and add items you love!
+    </p>
+    <div style="margin-top:1.8rem;">
+      <a href="{{ url_for('products.products') }}"
+         class="btn-accent-custom" id="shop-now-btn">
+        <i class="bi bi-shop"></i> Shop Now
+      </a>
+    </div>
+  </div>
+
+  {% endif %}
+
+</div><!-- /dashboard-wrapper -->
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+  /**
+   * ± quantity stepper for the cart table.
+   * Clicking − or + changes the input value but does NOT auto-submit,
+   * so the user can adjust and then click "Update".
+   */
+  function stepCart(btn, delta) {
+    const row   = btn.closest('tr');
+    const input = row.querySelector('input[type="number"]');
+    if (!input) return;
+    const min = parseInt(input.min) ?? 0;
+    const max = parseInt(input.max) || 9999;
+    let val = parseInt(input.value) || 0;
+    val = Math.min(max, Math.max(min, val + delta));
+    input.value = val;
+    // Highlight Update button to prompt user to save
+    const updateBtn = row.querySelector('button[type="submit"]');
+    if (updateBtn) {
+      updateBtn.style.background = 'rgba(0,198,255,0.25)';
+      updateBtn.style.borderColor = 'var(--primary)';
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Manage Orders – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <!-- Breadcrumb -->
+  <nav class="sh-breadcrumb">
+    <a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-shield-lock"></i> Admin Dashboard</a>
+    <span class="sep">/</span>
+    <span class="current">Orders</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="page-header" style="display:flex;align-items:center;
+       justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-receipt" style="color:var(--primary);"></i>
+        Manage <span class="text-gradient">Orders</span>
+      </h1>
+      <p class="page-subtitle">View and update customer order statuses.</p>
+    </div>
+  </div>
+
+  <!-- ── Orders Table ── -->
+  <div class="dashboard-card" style="padding:0;overflow:hidden;">
+    <div class="table-responsive">
+      <table class="table mb-0" style="color:var(--text-primary);border-color:var(--border);">
+        <thead>
+          <tr style="background:var(--bg-card-2);border-bottom:2px solid var(--border);">
+            <th style="padding:1rem 1.2rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;">Order ID</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;">Customer</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;">Order Date</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;text-align:right;">Total Price</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;text-align:center;">Status</th>
+            <th style="padding:1rem 1.2rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr style="border-bottom:1px solid var(--border);transition:background 0.2s;"
+              onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+              onmouseout="this.style.background='transparent'">
+            
+            <!-- Order ID -->
+            <td style="padding:1rem 1.2rem;vertical-align:middle;border:none;">
+              <span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;color:var(--primary);">
+                #{{ '%05d'|format(order.id) }}
+              </span>
+            </td>
+
+            <!-- Customer -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;">
+              <span style="font-weight:600;font-size:0.9rem;display:block;">{{ order.shipping_name }}</span>
+              <span style="font-size:0.75rem;color:var(--text-secondary);">{{ order.user.email }}</span>
+            </td>
+
+            <!-- Order Date -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;">
+              <span style="font-size:0.85rem;">{{ order.created_at.strftime('%d %b %Y') }}</span>
+              <span style="display:block;font-size:0.75rem;color:var(--text-muted);">
+                {{ order.created_at.strftime('%I:%M %p') }}
+              </span>
+            </td>
+
+            <!-- Total Price -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;text-align:right;">
+              <span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:0.95rem;
+                           background:var(--gradient-accent);-webkit-background-clip:text;
+                           -webkit-text-fill-color:transparent;background-clip:text;">
+                {{ order.formatted_total }}
+              </span>
+            </td>
+
+            <!-- Status -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;text-align:center;">
+              {% set badge_color, badge_icon = order.status_badge %}
+              <span style="display:inline-flex;align-items:center;gap:0.35rem;
+                           padding:0.25rem 0.8rem;border-radius:50px;
+                           font-size:0.74rem;font-weight:700;text-transform:uppercase;
+                           letter-spacing:0.5px;
+                           {% if order.status == 'processing' %}
+                             background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;
+                           {% elif order.status == 'shipped' %}
+                             background:rgba(0,198,255,0.12);border:1px solid rgba(0,198,255,0.3);color:var(--primary);
+                           {% elif order.status == 'delivered' %}
+                             background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:var(--success);
+                           {% elif order.status == 'cancelled' %}
+                             background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;
+                           {% else %}
+                             background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;
+                           {% endif %}">
+                <i class="bi {{ badge_icon }}"></i> {{ order.status|title }}
+              </span>
+            </td>
+
+            <!-- Actions (Update Status Form) -->
+            <td style="padding:1rem 1.2rem;vertical-align:middle;border:none;text-align:right;">
+              <form method="POST" action="{{ url_for('admin.order_update_status', order_id=order.id) }}"
+                    style="margin:0;display:flex;gap:0.5rem;justify-content:flex-end;">
+                <select name="status" class="form-select form-select-sm"
+                        style="width:auto;background-color:var(--bg-card);color:var(--text-primary);
+                               border:1px solid var(--border);font-size:0.8rem;">
+                  <option value="pending"    {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                  <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
+                  <option value="shipped"    {% if order.status == 'shipped' %}selected{% endif %}>Shipped</option>
+                  <option value="delivered"  {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                  <option value="cancelled"  {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+                <button type="submit" class="btn-primary-custom" style="padding:0.25rem 0.6rem;font-size:0.8rem;">
+                  Update
+                </button>
+              </form>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

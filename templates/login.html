@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Login – SportsHub{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-text">SportsHub</span>
+    </div>
+
+    <h1 class="auth-title">Welcome Back</h1>
+    <p class="auth-subtitle">Sign in to your account and continue your journey.</p>
+
+    <!-- Login Form -->
+    <form method="POST" action="{{ url_for('auth.login') }}" novalidate id="login-form">
+      {{ form.hidden_tag() }}
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label" for="email">
+          <i class="bi bi-envelope"></i> Email Address
+        </label>
+        {{ form.email(
+            id="email",
+            class="form-control-custom" + (" is-invalid" if form.email.errors else ""),
+            placeholder="you@example.com",
+            autocomplete="email"
+        ) }}
+        {% for error in form.email.errors %}
+          <div class="invalid-feedback"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label class="form-label" for="password">
+          <i class="bi bi-lock"></i> Password
+        </label>
+        {{ form.password(
+            id="password",
+            class="form-control-custom" + (" is-invalid" if form.password.errors else ""),
+            placeholder="Your password",
+            autocomplete="current-password"
+        ) }}
+        {% for error in form.password.errors %}
+          <div class="invalid-feedback"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Remember Me -->
+      <div class="form-group d-flex align-items-center gap-2">
+        {{ form.remember(id="remember", class="form-check-input") }}
+        <label class="form-check-label" for="remember">Remember me for 30 days</label>
+      </div>
+
+      <!-- Submit -->
+      {{ form.submit(class="btn-submit", id="login-submit-btn") }}
+    </form>
+
+    <div class="auth-divider">or</div>
+
+    <div class="auth-footer-link">
+      Don't have an account?
+      <a href="{{ url_for('auth.register') }}" id="goto-register-link">Create one for free →</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

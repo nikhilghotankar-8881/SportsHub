@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}My Orders – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <!-- Header -->
+  <div class="page-header" style="display:flex;align-items:center;
+       justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-bag-heart" style="color:var(--primary);"></i>
+        My <span class="text-gradient">Orders</span>
+      </h1>
+      <p class="page-subtitle">
+        {{ orders|length }} order{{ 's' if orders|length != 1 }}
+        placed so far
+      </p>
+    </div>
+    <a href="{{ url_for('products.products') }}"
+       class="btn-outline-custom" id="shop-more-btn">
+      <i class="bi bi-shop"></i> Shop More
+    </a>
+  </div>
+
+  {% if orders %}
+
+  <!-- ── Orders Table ── -->
+  <div class="dashboard-card" style="padding:0;overflow:hidden;">
+    <div class="table-responsive">
+      <table class="table mb-0" id="orders-table"
+             style="color:var(--text-primary);border-color:var(--border);">
+
+        <thead>
+          <tr style="background:var(--bg-card-2);border-bottom:2px solid var(--border);">
+            <th style="padding:1rem 1.2rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;">Order ID</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;">Date</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;text-align:center;">Items</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;text-align:center;">Status</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;text-align:right;">Total</th>
+            <th style="padding:1rem 0.8rem;font-size:0.74rem;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1px;
+                       color:var(--text-secondary);border:none;text-align:center;">Details</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for order in orders %}
+          {% set badge_color, badge_icon = order.status_badge %}
+          <tr id="order-row-{{ order.id }}"
+              style="border-bottom:1px solid var(--border);transition:background 0.2s;"
+              onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+              onmouseout="this.style.background='transparent'">
+
+            <!-- Order ID -->
+            <td style="padding:1rem 1.2rem;vertical-align:middle;border:none;">
+              <span style="font-family:'Outfit',sans-serif;font-weight:700;
+                           font-size:0.95rem;color:var(--primary);">
+                #{{ '%05d'|format(order.id) }}
+              </span>
+            </td>
+
+            <!-- Date -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;">
+              <span style="font-size:0.88rem;color:var(--text-primary);">
+                {{ order.created_at.strftime('%d %b %Y') }}
+              </span>
+              <span style="display:block;font-size:0.75rem;color:var(--text-muted);">
+                {{ order.created_at.strftime('%I:%M %p') }}
+              </span>
+            </td>
+
+            <!-- Item count -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;text-align:center;">
+              <span style="font-weight:600;font-size:0.9rem;">
+                {{ order.order_items|length }}
+              </span>
+              <span style="color:var(--text-muted);font-size:0.8rem;"> item{{ 's' if order.order_items|length != 1 }}</span>
+            </td>
+
+            <!-- Status Badge -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;text-align:center;">
+              <span style="display:inline-flex;align-items:center;gap:0.35rem;
+                           padding:0.25rem 0.8rem;border-radius:50px;
+                           font-size:0.74rem;font-weight:700;text-transform:uppercase;
+                           letter-spacing:0.5px;
+                           {% if order.status == 'confirmed' %}
+                             background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;
+                           {% elif order.status == 'shipped' %}
+                             background:rgba(0,198,255,0.12);border:1px solid rgba(0,198,255,0.3);color:var(--primary);
+                           {% elif order.status == 'delivered' %}
+                             background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:var(--success);
+                           {% elif order.status == 'cancelled' %}
+                             background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;
+                           {% else %}
+                             background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;
+                           {% endif %}">
+                <i class="bi {{ badge_icon }}"></i> {{ order.status|title }}
+              </span>
+            </td>
+
+            <!-- Total -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;text-align:right;">
+              <span style="font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;
+                           background:var(--gradient-accent);-webkit-background-clip:text;
+                           -webkit-text-fill-color:transparent;background-clip:text;">
+                {{ order.formatted_total }}
+              </span>
+            </td>
+
+            <!-- View Button -->
+            <td style="padding:1rem 0.8rem;vertical-align:middle;border:none;text-align:center;">
+              <a href="{{ url_for('orders.order_detail', order_id=order.id) }}"
+                 class="btn-view-product" id="view-order-{{ order.id }}"
+                 style="white-space:nowrap;">
+                View <i class="bi bi-arrow-right"></i>
+              </a>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+
+  <!-- Empty State -->
+  <div class="empty-state" style="min-height:50vh;display:flex;flex-direction:column;
+                                   align-items:center;justify-content:center;">
+    <div class="empty-state-icon">📦</div>
+    <h4>No orders yet</h4>
+    <p style="max-width:340px;">
+      You haven't placed any orders. Browse our sports collection and get started!
+    </p>
+    <div style="margin-top:1.8rem;">
+      <a href="{{ url_for('products.products') }}"
+         class="btn-accent-custom" id="start-shopping-btn">
+        <i class="bi bi-shop"></i> Start Shopping
+      </a>
+    </div>
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}

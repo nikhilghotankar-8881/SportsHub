@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} – SportsHub{% endblock %}
+
+{% block content %}
+<div class="product-detail-wrapper">
+
+  <!-- ── Breadcrumb ── -->
+  <nav class="sh-breadcrumb" aria-label="breadcrumb">
+    <a href="{{ url_for('main.index') }}"><i class="bi bi-house-door"></i> Home</a>
+    <span class="sep">/</span>
+    <a href="{{ url_for('products.products') }}">Shop</a>
+    {% if product.category %}
+      <span class="sep">/</span>
+      <a href="{{ url_for('products.products', category=product.category) }}">{{ product.category }}</a>
+    {% endif %}
+    <span class="sep">/</span>
+    <span class="current">{{ product.name }}</span>
+  </nav>
+
+  <!-- ── Main Product Section ── -->
+  <div class="row g-5 align-items-start">
+
+    <!-- Image Column -->
+    <div class="col-lg-5">
+      <div class="product-detail-img-wrap">
+        {% if product.image %}
+          <img src="{{ product.image }}" alt="{{ product.name }}" />
+        {% else %}
+          <span class="product-detail-placeholder">🏅</span>
+        {% endif %}
+      </div>
+
+      <!-- Stock indicator below image -->
+      <div style="margin-top:1rem;display:flex;align-items:center;gap:0.5rem;">
+        {% if product.in_stock %}
+          <span class="product-badge badge-in-stock" style="position:static;">
+            <i class="bi bi-check-circle-fill"></i> In Stock
+          </span>
+          <span style="color:var(--text-secondary);font-size:0.85rem;">
+            {{ product.stock }} unit{{ 's' if product.stock != 1 }} available
+          </span>
+        {% else %}
+          <span class="product-badge badge-out-of-stock" style="position:static;">
+            <i class="bi bi-x-circle-fill"></i> Out of Stock
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Info Column -->
+    <div class="col-lg-7">
+      <div class="product-detail-info">
+
+        {% if product.category %}
+          <p class="product-detail-category">
+            <i class="bi bi-tag-fill"></i> {{ product.category }}
+          </p>
+        {% endif %}
+
+        <h1 class="product-detail-name">{{ product.name }}</h1>
+
+        <span class="product-detail-price">{{ product.formatted_price }}</span>
+
+        {% if product.description %}
+          <p class="product-detail-desc">{{ product.description }}</p>
+        {% endif %}
+
+        <!-- Meta row -->
+        <div class="product-meta-row">
+          <div class="product-meta-item">
+            <span class="product-meta-label">Category</span>
+            <span class="product-meta-value">{{ product.category or '—' }}</span>
+          </div>
+          <div class="product-meta-item">
+            <span class="product-meta-label">Stock</span>
+            <span class="product-meta-value {% if product.in_stock %}stock-available{% else %}stock-out{% endif %}">
+              {% if product.in_stock %}{{ product.stock }} available{% else %}Sold out{% endif %}
+            </span>
+          </div>
+          <div class="product-meta-item">
+            <span class="product-meta-label">Product ID</span>
+            <span class="product-meta-value">#{{ '%05d' | format(product.id) }}</span>
+          </div>
+          <div class="product-meta-item">
+            <span class="product-meta-label">Added</span>
+            <span class="product-meta-value">{{ product.created_at.strftime('%d %b %Y') }}</span>
+          </div>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+          {% if product.in_stock %}
+            {% if current_user.is_authenticated %}
+              <form method="POST"
+                    action="{{ url_for('cart.add', product_id=product.id) }}"
+                    id="add-to-cart-form-{{ product.id }}"
+                    style="display:flex;gap:0.6rem;align-items:center;">
+                <!-- Quantity stepper -->
+                <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+                  <button type="button" onclick="stepQty(this,-1)"
+                          style="background:var(--bg-card-2);border:none;color:var(--text-primary);padding:0.55rem 0.85rem;cursor:pointer;font-size:1rem;">−</button>
+                  <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}"
+                         id="qty-{{ product.id }}"
+                         style="width:52px;text-align:center;background:transparent;border:none;color:var(--text-primary);font-size:0.95rem;font-weight:600;outline:none;" />
+                  <button type="button" onclick="stepQty(this,1)"
+                          style="background:var(--bg-card-2);border:none;color:var(--text-primary);padding:0.55rem 0.85rem;cursor:pointer;font-size:1rem;">+</button>
+                </div>
+                <button type="submit" class="btn-add-cart" id="add-to-cart-btn-{{ product.id }}">
+                  <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+              </form>
+            {% else %}
+              <a href="{{ url_for('auth.login', next=request.path) }}"
+                 class="btn-add-cart"
+                 id="login-to-buy-btn">
+                <i class="bi bi-box-arrow-in-right"></i> Login to Buy
+              </a>
+            {% endif %}
+          {% else %}
+            <span class="btn-add-cart disabled" aria-disabled="true">
+              <i class="bi bi-cart-x"></i> Out of Stock
+            </span>
+          {% endif %}
+        </div>
+
+
+        <!-- Trust badges -->
+        <div style="display:flex;gap:1.5rem;margin-top:1.8rem;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:0.4rem;color:var(--text-muted);font-size:0.82rem;">
+            <i class="bi bi-shield-check" style="color:var(--success);"></i> Authentic Products
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;color:var(--text-muted);font-size:0.82rem;">
+            <i class="bi bi-truck" style="color:var(--primary);"></i> Fast Delivery
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;color:var(--text-muted);font-size:0.82rem;">
+            <i class="bi bi-arrow-counterclockwise" style="color:var(--accent);"></i> Easy Returns
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Related Products ── -->
+  {% if related %}
+    <div class="related-section">
+      <h2 class="section-title">
+        More in <span class="text-gradient">{{ product.category }}</span>
+      </h2>
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+        {% for item in related %}
+          <div class="col">
+            <a href="{{ url_for('products.product_detail', product_id=item.id) }}"
+               class="product-card"
+               id="related-card-{{ item.id }}">
+              <div class="product-img-wrap">
+                {% if item.image %}
+                  <img src="{{ item.image }}" alt="{{ item.name }}" loading="lazy" />
+                {% else %}
+                  <span class="product-placeholder-icon">🏅</span>
+                {% endif %}
+                {% if not item.in_stock %}
+                  <span class="product-badge badge-out-of-stock" style="top:0.7rem;left:auto;right:0.7rem;">
+                    Out of Stock
+                  </span>
+                {% endif %}
+              </div>
+              <div class="product-body">
+                <h6 class="product-name">{{ item.name }}</h6>
+              </div>
+              <div class="product-footer">
+                <span class="product-price">{{ item.formatted_price }}</span>
+                <span class="btn-view-product">
+                  View <i class="bi bi-arrow-right"></i>
+                </span>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Back link -->
+  <div style="margin-top:2.5rem;">
+    <a href="{{ url_for('products.products') }}" class="btn-outline-custom" id="back-to-shop-btn">
+      <i class="bi bi-arrow-left"></i> Back to Shop
+    </a>
+  </div>
+
+</div>
+
+{% block extra_scripts %}
+<script>
+  function stepQty(btn, delta) {
+    // find the closest input[type=number] sibling
+    const wrap  = btn.parentElement;
+    const input = wrap.querySelector('input[type="number"]');
+    if (!input) return;
+    const min = parseInt(input.min) || 1;
+    const max = parseInt(input.max) || 9999;
+    let val = parseInt(input.value) || 1;
+    val = Math.min(max, Math.max(min, val + delta));
+    input.value = val;
+  }
+</script>
+{% endblock %}
+{% endblock %}

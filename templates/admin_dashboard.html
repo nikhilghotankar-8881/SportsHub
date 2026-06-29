@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <!-- Header -->
+  <div class="page-header" style="display:flex;align-items:center;
+       justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-shield-lock" style="color:var(--primary);"></i>
+        Admin <span class="text-gradient">Dashboard</span>
+      </h1>
+      <p class="page-subtitle">Overview of your store's performance.</p>
+    </div>
+  </div>
+
+  <!-- ── Statistics Cards ── -->
+  <div class="row g-4 mb-4">
+    
+    <!-- Total Users -->
+    <div class="col-md-6 col-lg-3">
+      <div class="dashboard-card" style="height:100%;display:flex;flex-direction:column;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div style="width:56px;height:56px;border-radius:12px;
+                      background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:1.8rem;color:#60a5fa;flex-shrink:0;">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:700;
+                      text-transform:uppercase;letter-spacing:1px;">Total Users</p>
+            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.8rem;">
+              {{ total_users }}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Products -->
+    <div class="col-md-6 col-lg-3">
+      <div class="dashboard-card" style="height:100%;display:flex;flex-direction:column;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div style="width:56px;height:56px;border-radius:12px;
+                      background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:1.8rem;color:#fbbf24;flex-shrink:0;">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:700;
+                      text-transform:uppercase;letter-spacing:1px;">Total Products</p>
+            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.8rem;">
+              {{ total_products }}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Orders -->
+    <div class="col-md-6 col-lg-3">
+      <div class="dashboard-card" style="height:100%;display:flex;flex-direction:column;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div style="width:56px;height:56px;border-radius:12px;
+                      background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:1.8rem;color:var(--success);flex-shrink:0;">
+            <i class="bi bi-receipt"></i>
+          </div>
+          <div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:700;
+                      text-transform:uppercase;letter-spacing:1px;">Total Orders</p>
+            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.8rem;">
+              {{ total_orders }}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Revenue -->
+    <div class="col-md-6 col-lg-3">
+      <div class="dashboard-card" style="height:100%;display:flex;flex-direction:column;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div style="width:56px;height:56px;border-radius:12px;
+                      background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:1.8rem;color:#f87171;flex-shrink:0;">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+          <div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:700;
+                      text-transform:uppercase;letter-spacing:1px;">Total Revenue</p>
+            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.5rem;
+                       background:var(--gradient-accent);-webkit-background-clip:text;
+                       -webkit-text-fill-color:transparent;background-clip:text;">
+              ₹{{ "%.2f"|format(total_revenue) }}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="dashboard-card">
+    <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
+      <i class="bi bi-info-circle" style="color:var(--primary);"></i> Admin Actions
+    </h5>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;">
+      <a href="{{ url_for('admin.users') }}" class="btn-outline-custom" style="text-decoration:none;">
+        <i class="bi bi-people"></i> Manage Users
+      </a>
+      <a href="{{ url_for('admin.products') }}" class="btn-outline-custom" style="text-decoration:none;">
+        <i class="bi bi-box-seam"></i> Manage Products
+      </a>
+      <a href="{{ url_for('admin.orders') }}" class="btn-primary-custom" style="text-decoration:none;">
+        <i class="bi bi-receipt"></i> Manage Orders
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
