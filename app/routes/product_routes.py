@@ -10,6 +10,7 @@ def products():
     category = request.args.get("category", "").strip()
     search   = request.args.get("q", "").strip()
     sort     = request.args.get("sort", "newest").strip()
+    page     = request.args.get("page", 1, type=int)
 
     query = Product.query
 
@@ -25,7 +26,8 @@ def products():
     else:
         query = query.order_by(Product.created_at.desc())
         
-    all_products = query.all()
+    pagination = query.paginate(page=page, per_page=8, error_out=False)
+    all_products = pagination.items
 
     # Define hardcoded category list for filter sidebar
     all_categories = ["Cricket", "Football", "Basketball", "Gym", "Accessories"]
@@ -34,6 +36,7 @@ def products():
         "products.html",
         title="Shop – SportsHub",
         products=all_products,
+        pagination=pagination,
         categories=all_categories,
         active_category=category,
         search_query=search,
