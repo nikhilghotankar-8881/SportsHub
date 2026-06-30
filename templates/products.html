@@ -54,14 +54,14 @@
       <div class="sidebar-card">
         <p class="sidebar-title"><i class="bi bi-funnel"></i> Categories</p>
 
-        <a href="{{ url_for('products.products') }}"
+        <a href="{{ url_for('products.products', q=search_query) if search_query else url_for('products.products') }}"
            class="category-link {% if not active_category %}active{% endif %}"
            id="cat-all">
           <i class="bi bi-grid-2x2"></i> All
         </a>
 
         {% for cat in categories %}
-          <a href="{{ url_for('products.products', category=cat) }}"
+          <a href="{{ url_for('products.products', category=cat, q=search_query) if search_query else url_for('products.products', category=cat) }}"
              class="category-link {% if active_category == cat %}active{% endif %}"
              id="cat-{{ cat|lower|replace(' ','-') }}">
             <i class="bi bi-tag"></i> {{ cat }}

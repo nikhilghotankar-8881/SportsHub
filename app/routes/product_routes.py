@@ -20,8 +20,8 @@ def products():
 
     all_products = query.order_by(Product.created_at.desc()).all()
 
-    # Build unique category list for filter sidebar
-    all_categories = db_categories()
+    # Define hardcoded category list for filter sidebar
+    all_categories = ["Cricket", "Football", "Basketball", "Gym", "Accessories"]
 
     return render_template(
         "products.html",
@@ -52,16 +52,3 @@ def product_detail(product_id):
         product=product,
         related=related,
     )
-
-
-def db_categories():
-    """Return a sorted list of unique product categories."""
-    rows = (
-        Product.query
-        .with_entities(Product.category)
-        .filter(Product.category.isnot(None))
-        .distinct()
-        .order_by(Product.category)
-        .all()
-    )
-    return [r.category for r in rows if r.category]
