@@ -23,28 +23,49 @@
       </p>
     </div>
 
-    <!-- Search -->
-    <form class="search-bar" method="GET" action="{{ url_for('products.products') }}" id="product-search-form">
-      {% if active_category %}
-        <input type="hidden" name="category" value="{{ active_category }}" />
-      {% endif %}
-      <input
-        type="text"
-        name="q"
-        class="search-input"
-        placeholder="Search products…"
-        value="{{ search_query }}"
-        id="product-search-input"
-      />
-      <button type="submit" class="btn-primary-custom" style="padding:0.6rem 1rem;" id="search-submit-btn">
-        <i class="bi bi-search"></i>
-      </button>
-      {% if search_query or active_category %}
-        <a href="{{ url_for('products.products') }}" class="btn-outline-custom" style="padding:0.58rem 0.9rem;" id="clear-filter-btn">
-          <i class="bi bi-x-lg"></i>
-        </a>
-      {% endif %}
-    </form>
+    <!-- Controls -->
+    <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+      <!-- Search -->
+      <form class="search-bar" method="GET" action="{{ url_for('products.products') }}" id="product-search-form" style="margin-bottom:0;">
+        {% if active_category %}
+          <input type="hidden" name="category" value="{{ active_category }}" />
+        {% endif %}
+        {% if current_sort and current_sort != 'newest' %}
+          <input type="hidden" name="sort" value="{{ current_sort }}" />
+        {% endif %}
+        <input
+          type="text"
+          name="q"
+          class="search-input"
+          placeholder="Search products…"
+          value="{{ search_query }}"
+          id="product-search-input"
+        />
+        <button type="submit" class="btn-primary-custom" style="padding:0.6rem 1rem;" id="search-submit-btn">
+          <i class="bi bi-search"></i>
+        </button>
+        {% if search_query or active_category or (current_sort and current_sort != 'newest') %}
+          <a href="{{ url_for('products.products') }}" class="btn-outline-custom" style="padding:0.58rem 0.9rem;" id="clear-filter-btn" title="Clear all filters">
+            <i class="bi bi-x-lg"></i>
+          </a>
+        {% endif %}
+      </form>
+
+      <!-- Sort Dropdown -->
+      <div class="dropdown">
+        <button class="btn-outline-custom dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="padding:0.58rem 1rem;background:var(--bg-card);color:var(--text-primary);border-color:var(--border);">
+          <i class="bi bi-sort-down"></i> 
+          {% if current_sort == 'price_asc' %}Price: Low to High
+          {% elif current_sort == 'price_desc' %}Price: High to Low
+          {% else %}Newest First{% endif %}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="sortDropdown">
+          <li><a class="dropdown-item {% if current_sort == 'newest' or not current_sort %}active{% endif %}" href="{{ url_for('products.products', category=active_category or None, q=search_query or None, sort='newest') }}">Newest First</a></li>
+          <li><a class="dropdown-item {% if current_sort == 'price_asc' %}active{% endif %}" href="{{ url_for('products.products', category=active_category or None, q=search_query or None, sort='price_asc') }}">Price: Low to High</a></li>
+          <li><a class="dropdown-item {% if current_sort == 'price_desc' %}active{% endif %}" href="{{ url_for('products.products', category=active_category or None, q=search_query or None, sort='price_desc') }}">Price: High to Low</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <div class="row g-4">
@@ -54,14 +75,14 @@
       <div class="sidebar-card">
         <p class="sidebar-title"><i class="bi bi-funnel"></i> Categories</p>
 
-        <a href="{{ url_for('products.products', q=search_query) if search_query else url_for('products.products') }}"
+        <a href="{{ url_for('products.products', q=search_query or None, sort=current_sort or None) }}"
            class="category-link {% if not active_category %}active{% endif %}"
            id="cat-all">
           <i class="bi bi-grid-2x2"></i> All
         </a>
 
         {% for cat in categories %}
-          <a href="{{ url_for('products.products', category=cat, q=search_query) if search_query else url_for('products.products', category=cat) }}"
+          <a href="{{ url_for('products.products', category=cat, q=search_query or None, sort=current_sort or None) }}"
              class="category-link {% if active_category == cat %}active{% endif %}"
              id="cat-{{ cat|lower|replace(' ','-') }}">
             <i class="bi bi-tag"></i> {{ cat }}

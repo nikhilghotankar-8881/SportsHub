@@ -9,6 +9,7 @@ def products():
     """List all products with optional category filter."""
     category = request.args.get("category", "").strip()
     search   = request.args.get("q", "").strip()
+    sort     = request.args.get("sort", "newest").strip()
 
     query = Product.query
 
@@ -17,8 +18,14 @@ def products():
 
     if search:
         query = query.filter(Product.name.ilike(f"%{search}%"))
-
-    all_products = query.order_by(Product.created_at.desc()).all()
+    if sort == "price_asc":
+        query = query.order_by(Product.price.asc())
+    elif sort == "price_desc":
+        query = query.order_by(Product.price.desc())
+    else:
+        query = query.order_by(Product.created_at.desc())
+        
+    all_products = query.all()
 
     # Define hardcoded category list for filter sidebar
     all_categories = ["Cricket", "Football", "Basketball", "Gym", "Accessories"]
@@ -30,6 +37,7 @@ def products():
         categories=all_categories,
         active_category=category,
         search_query=search,
+        current_sort=sort,
     )
 
 
