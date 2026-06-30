@@ -110,4 +110,96 @@
 
   </div>
 </section>
+
+<!-- ── Featured Products ── -->
+<section style="padding: 5rem 0;">
+  <div class="container-custom">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <h2 class="hero-title" style="font-size: 2rem;">Featured <span class="highlight">Products</span></h2>
+        <p class="hero-description" style="margin-top:0.5rem;font-size:1rem;">Handpicked gear for top performers.</p>
+      </div>
+      <a href="{{ url_for('products.products') }}" class="btn-outline-custom">View All</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+      {% for product in featured_products %}
+      <div class="col">
+        <div class="product-card" id="product-card-{{ product.id }}">
+          <a href="{{ url_for('products.product_detail', product_id=product.id) }}" style="display:block;text-decoration:none;color:inherit;">
+            <div class="product-img-wrap">
+              {% if product.image %}
+                <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" />
+              {% else %}
+                <span class="product-placeholder-icon">🏅</span>
+              {% endif %}
+              {% if product.category %}
+                <span class="product-badge badge-category">{{ product.category }}</span>
+              {% endif %}
+              {% if not product.in_stock %}
+                <span class="product-badge badge-out-of-stock" style="top:0.7rem;left:auto;right:0.7rem;">Out of Stock</span>
+              {% endif %}
+            </div>
+            <div class="product-body">
+              {% if product.category %}
+                <span class="product-category-tag">{{ product.category }}</span>
+              {% endif %}
+              <h5 class="product-name">{{ product.name }}</h5>
+              <p class="product-price" style="margin-top:0.5rem;margin-bottom:0;">{{ product.formatted_price }}</p>
+            </div>
+          </a>
+        </div>
+      </div>
+      {% else %}
+        <p class="text-muted">No featured products available.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Latest Arrivals ── -->
+<section style="padding: 5rem 0; background: rgba(255,255,255,0.01);">
+  <div class="container-custom">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <h2 class="hero-title" style="font-size: 2rem;">Latest <span class="highlight-accent">Arrivals</span></h2>
+        <p class="hero-description" style="margin-top:0.5rem;font-size:1rem;">Fresh gear just landed.</p>
+      </div>
+      <a href="{{ url_for('products.products', sort='newest') }}" class="btn-outline-custom">View All</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+      {% for product in latest_arrivals %}
+      <div class="col">
+        <div class="product-card" id="product-card-{{ product.id }}">
+          <a href="{{ url_for('products.product_detail', product_id=product.id) }}" style="display:block;text-decoration:none;color:inherit;">
+            <div class="product-img-wrap">
+              {% if product.image %}
+                <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" />
+              {% else %}
+                <span class="product-placeholder-icon">🏅</span>
+              {% endif %}
+              {% if product.category %}
+                <span class="product-badge badge-category">{{ product.category }}</span>
+              {% endif %}
+              {% if not product.in_stock %}
+                <span class="product-badge badge-out-of-stock" style="top:0.7rem;left:auto;right:0.7rem;">Out of Stock</span>
+              {% endif %}
+            </div>
+            <div class="product-body">
+              {% if product.category %}
+                <span class="product-category-tag">{{ product.category }}</span>
+              {% endif %}
+              <h5 class="product-name">{{ product.name }}</h5>
+              <p class="product-price" style="margin-top:0.5rem;margin-bottom:0;">{{ product.formatted_price }}</p>
+            </div>
+          </a>
+        </div>
+      </div>
+      {% else %}
+        <p class="text-muted">No new arrivals available.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 {% endblock %}
