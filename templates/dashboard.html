@@ -79,6 +79,10 @@
              style="justify-content:center;text-decoration:none;">
             <i class="bi bi-house-door"></i> Back to Home
           </a>
+          <a href="{{ url_for('main.change_password') }}" class="btn-outline-custom" id="dashboard-change-pwd-btn"
+             style="justify-content:center;text-decoration:none;">
+            <i class="bi bi-shield-lock"></i> Change Password
+          </a>
           <a href="{{ url_for('auth.logout') }}" class="btn-primary-custom" id="dashboard-logout-btn"
              style="justify-content:center;text-decoration:none;">
             <i class="bi bi-box-arrow-right"></i> Logout
