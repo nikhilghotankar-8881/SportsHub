@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
+from app.forms import EditProfileForm, ChangePasswordForm
+from app import db
 
 main = Blueprint("main", __name__)
 
@@ -35,3 +37,32 @@ def dashboard():
         total_cart_items=total_cart_items,
         recent_orders=recent_orders
     )
+
+@main.route("/profile/edit", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.name = form.name.data
+        current_user.email = form.email.data
+        db.session.commit()
+        flash("Your profile has been updated successfully.", "success")
+        return redirect(url_for("main.dashboard"))
+    elif request.method == "GET":
+        form.name.data = current_user.name
+        form.email.data = current_user.email
+    return render_template("edit_profile.html", title="Edit Profile", form=form)
+
+@main.route("/change-password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.check_password(form.current_password.data):
+            current_user.set_password(form.new_password.data)
+            db.session.commit()
+            flash("Your password has been updated successfully.", "success")
+            return redirect(url_for("main.dashboard"))
+        else:
+            flash("Incorrect current password.", "danger")
+    return render_template("change_password.html", title="Change Password", form=form)

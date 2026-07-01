@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile – SportsHub{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-text">SportsHub</span>
+    </div>
+
+    <h1 class="auth-title">Edit Profile</h1>
+    <p class="auth-subtitle">Update your personal information.</p>
+
+    <!-- Edit Profile Form -->
+    <form method="POST" action="{{ url_for('main.edit_profile') }}" novalidate id="edit-profile-form">
+      {{ form.hidden_tag() }}
+
+      <!-- Full Name -->
+      <div class="form-group">
+        <label class="form-label" for="name">
+          <i class="bi bi-person"></i> Full Name
+        </label>
+        {{ form.name(
+            id="name",
+            class="form-control-custom" + (" is-invalid" if form.name.errors else ""),
+            placeholder="Your full name"
+        ) }}
+        {% for error in form.name.errors %}
+          <div class="invalid-feedback"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label" for="email">
+          <i class="bi bi-envelope"></i> Email Address
+        </label>
+        {{ form.email(
+            id="email",
+            class="form-control-custom" + (" is-invalid" if form.email.errors else ""),
+            placeholder="you@example.com",
+            autocomplete="email"
+        ) }}
+        {% for error in form.email.errors %}
+          <div class="invalid-feedback"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Submit -->
+      {{ form.submit(class="btn-submit", id="edit-profile-submit-btn") }}
+    </form>
+
+    <div class="auth-footer-link" style="margin-top: 1rem;">
+      <a href="{{ url_for('main.dashboard') }}" id="goto-dashboard-link">← Back to Dashboard</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
