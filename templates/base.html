@@ -69,7 +69,7 @@
           {% endif %}
         </ul>
 
-        <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <ul class="navbar-nav ms-auto align-items-lg-center align-items-start gap-2 mt-3 mt-lg-0">
           {% if current_user.is_authenticated %}
             <li class="nav-item">
               <span class="nav-link text-secondary">
@@ -106,19 +106,19 @@
                 {% endif %}
               </a>
             </li>
-            <li class="nav-item">
-              <a href="{{ url_for('auth.logout') }}" class="btn-outline-custom btn-sm" id="nav-logout-btn">
+            <li class="nav-item mt-2 mt-lg-0">
+              <a href="{{ url_for('auth.logout') }}" class="btn-outline-custom btn-sm w-100 w-lg-auto text-start text-lg-center" id="nav-logout-btn">
                 <i class="bi bi-box-arrow-right"></i> Logout
               </a>
             </li>
           {% else %}
-            <li class="nav-item">
-              <a href="{{ url_for('auth.login') }}" class="btn-outline-custom" id="nav-login-btn">
+            <li class="nav-item w-100 w-lg-auto mb-2 mb-lg-0">
+              <a href="{{ url_for('auth.login') }}" class="btn-outline-custom w-100 justify-content-center" id="nav-login-btn">
                 <i class="bi bi-box-arrow-in-right"></i> Login
               </a>
             </li>
-            <li class="nav-item">
-              <a href="{{ url_for('auth.register') }}" class="btn-primary-custom" id="nav-register-btn">
+            <li class="nav-item w-100 w-lg-auto">
+              <a href="{{ url_for('auth.register') }}" class="btn-primary-custom w-100 justify-content-center" id="nav-register-btn">
                 <i class="bi bi-person-plus"></i> Sign Up
               </a>
             </li>
