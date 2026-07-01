@@ -42,6 +42,12 @@ class User(UserMixin, db.Model):
         lazy="dynamic",
         order_by="Order.created_at.desc()",
     )
+    wishlist_items = db.relationship(
+        "Wishlist",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -76,6 +82,12 @@ class Product(db.Model):
     order_items = db.relationship(
         "OrderItem",
         back_populates="product",
+        lazy="dynamic",
+    )
+    wishlist_items = db.relationship(
+        "Wishlist",
+        back_populates="product",
+        cascade="all, delete-orphan",
         lazy="dynamic",
     )
 
@@ -197,3 +209,22 @@ class OrderItem(db.Model):
 
     def __repr__(self):
         return f"<OrderItem order={self.order_id} product={self.product_id} qty={self.quantity}>"
+
+
+class Wishlist(db.Model):
+    __tablename__ = "wishlists"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey("users.id"),    nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "product_id", name="uq_wishlist_user_product"),
+    )
+
+    user    = db.relationship("User",    back_populates="wishlist_items")
+    product = db.relationship("Product", back_populates="wishlist_items")
+
+    def __repr__(self):
+        return f"<Wishlist user={self.user_id} product={self.product_id}>"

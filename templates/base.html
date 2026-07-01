@@ -92,6 +92,21 @@
               </a>
             </li>
             <li class="nav-item">
+              <a href="{{ url_for('wishlist.view_wishlist') }}" class="btn-outline-custom" id="nav-wishlist-btn"
+                 style="position:relative;">
+                <i class="bi bi-heart"></i> Wishlist
+                {% set wishlist_count = current_user.wishlist_items.count() %}
+                {% if wishlist_count > 0 %}
+                  <span style="position:absolute;top:-6px;right:-6px;background:var(--accent);
+                               color:#fff;font-size:0.65rem;font-weight:800;min-width:18px;
+                               height:18px;border-radius:50%;display:flex;align-items:center;
+                               justify-content:center;padding:0 3px;">
+                    {{ wishlist_count }}
+                  </span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item">
               <a href="{{ url_for('auth.logout') }}" class="btn-outline-custom btn-sm" id="nav-logout-btn">
                 <i class="bi bi-box-arrow-right"></i> Logout
               </a>

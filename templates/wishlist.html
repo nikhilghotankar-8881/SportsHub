@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}My Wishlist – SportsHub{% endblock %}
+
+{% block content %}
+<div class="container-custom" style="padding: 2rem 0;">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h2><i class="bi bi-heart" style="color:var(--accent);"></i> My Wishlist</h2>
+    <a href="{{ url_for('products.products') }}" class="btn-outline-custom">
+      <i class="bi bi-shop"></i> Continue Shopping
+    </a>
+  </div>
+
+  {% if items %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+      {% for item in items %}
+      <div class="col">
+        <div class="product-card">
+          <a href="{{ url_for('products.product_detail', product_id=item.product.id) }}" style="display:block;text-decoration:none;color:inherit;">
+            <div class="product-img-wrap">
+              {% if item.product.image %}
+                <img src="{{ item.product.image }}" alt="{{ item.product.name }}" loading="lazy" />
+              {% else %}
+                <span class="product-placeholder-icon">🏅</span>
+              {% endif %}
+              {% if not item.product.in_stock %}
+                <span class="product-badge badge-out-of-stock" style="top:0.7rem;left:auto;right:0.7rem;">Out of Stock</span>
+              {% endif %}
+            </div>
+            <div class="product-body">
+              <h5 class="product-name">{{ item.product.name }}</h5>
+              <p class="product-price" style="margin-top:0.5rem;margin-bottom:0;">{{ item.product.formatted_price }}</p>
+            </div>
+          </a>
+          <div class="product-footer d-flex justify-content-between align-items-center">
+            <form action="{{ url_for('wishlist.remove', product_id=item.product.id) }}" method="POST">
+              <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove from wishlist">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+            {% if item.product.in_stock %}
+              <form action="{{ url_for('cart.add', product_id=item.product.id) }}" method="POST">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn-accent-custom" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                  <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+              </form>
+            {% else %}
+              <button class="btn-accent-custom" disabled style="padding: 0.3rem 0.6rem; font-size: 0.8rem; opacity: 0.5;">
+                Out of Stock
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state text-center mt-5">
+      <div class="empty-state-icon" style="font-size: 4rem; color: var(--border);">💔</div>
+      <h4>Your wishlist is empty</h4>
+      <p class="text-muted">Save items you love and buy them later.</p>
+      <a href="{{ url_for('products.products') }}" class="btn-primary-custom mt-3">Browse Products</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

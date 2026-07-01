@@ -138,7 +138,33 @@
                 </a>
 
                 <!-- ── Footer (price + Add to Cart) ── -->
-                <div class="product-footer" style="flex-wrap:wrap;gap:0.6rem;">
+                <div class="product-footer" style="flex-wrap:wrap;gap:0.6rem; position: relative;">
+                  {% set in_wishlist = False %}
+                  {% if current_user.is_authenticated %}
+                    {% set in_wishlist = current_user.wishlist_items.filter_by(product_id=product.id).first() is not none %}
+                  {% endif %}
+                  
+                  <div style="position: absolute; top: -35px; right: 10px; z-index: 10;">
+                    {% if current_user.is_authenticated %}
+                      {% if in_wishlist %}
+                        <form method="POST" action="{{ url_for('wishlist.remove', product_id=product.id) }}" style="display:inline;">
+                          <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--accent);">
+                            <i class="bi bi-heart-fill"></i>
+                          </button>
+                        </form>
+                      {% else %}
+                        <form method="POST" action="{{ url_for('wishlist.add', product_id=product.id) }}" style="display:inline;">
+                          <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
+                            <i class="bi bi-heart"></i>
+                          </button>
+                        </form>
+                      {% endif %}
+                    {% else %}
+                      <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
+                        <i class="bi bi-heart"></i>
+                      </a>
+                    {% endif %}
+                  </div>
 
                   <!-- Price + stock -->
                   <div style="display:flex;flex-direction:column;gap:0.2rem;">

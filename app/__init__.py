@@ -32,6 +32,7 @@ def create_app():
     from app.routes.checkout_routes import checkout_bp
     from app.routes.order_routes import orders_bp
     from app.routes.admin_routes import admin_bp
+    from app.routes.wishlist_routes import wishlist_bp
 
     app.register_blueprint(auth)
     app.register_blueprint(main)
@@ -40,6 +41,7 @@ def create_app():
     app.register_blueprint(checkout_bp)
     app.register_blueprint(orders_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(wishlist_bp)
 
     from app import models  # noqa: F401
 

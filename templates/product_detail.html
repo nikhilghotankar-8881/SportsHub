@@ -122,6 +122,31 @@
               <i class="bi bi-cart-x"></i> Out of Stock
             </span>
           {% endif %}
+          
+          {% set in_wishlist = False %}
+          {% if current_user.is_authenticated %}
+            {% set in_wishlist = current_user.wishlist_items.filter_by(product_id=product.id).first() is not none %}
+          {% endif %}
+          
+          {% if current_user.is_authenticated %}
+            {% if in_wishlist %}
+              <form method="POST" action="{{ url_for('wishlist.remove', product_id=product.id) }}">
+                <button type="submit" class="btn-outline-custom" style="padding:0.7rem 1.2rem; display:flex; align-items:center; gap:0.5rem; color:var(--accent); border-color:var(--accent);">
+                  <i class="bi bi-heart-fill"></i> Remove from Wishlist
+                </button>
+              </form>
+            {% else %}
+              <form method="POST" action="{{ url_for('wishlist.add', product_id=product.id) }}">
+                <button type="submit" class="btn-outline-custom" style="padding:0.7rem 1.2rem; display:flex; align-items:center; gap:0.5rem;">
+                  <i class="bi bi-heart"></i> Add to Wishlist
+                </button>
+              </form>
+            {% endif %}
+          {% else %}
+            <a href="{{ url_for('auth.login', next=request.path) }}" class="btn-outline-custom" style="padding:0.7rem 1.2rem; display:flex; align-items:center; gap:0.5rem;">
+              <i class="bi bi-heart"></i> Add to Wishlist
+            </a>
+          {% endif %}
         </div>
 
 
@@ -169,7 +194,32 @@
               <div class="product-body">
                 <h6 class="product-name">{{ item.name }}</h6>
               </div>
-              <div class="product-footer">
+              <div class="product-footer" style="position: relative;">
+                {% set in_wishlist_related = False %}
+                {% if current_user.is_authenticated %}
+                  {% set in_wishlist_related = current_user.wishlist_items.filter_by(product_id=item.id).first() is not none %}
+                {% endif %}
+                <div style="position: absolute; top: -35px; right: 10px; z-index: 10;">
+                  {% if current_user.is_authenticated %}
+                    {% if in_wishlist_related %}
+                      <form method="POST" action="{{ url_for('wishlist.remove', product_id=item.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--accent);">
+                          <i class="bi bi-heart-fill"></i>
+                        </button>
+                      </form>
+                    {% else %}
+                      <form method="POST" action="{{ url_for('wishlist.add', product_id=item.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
+                          <i class="bi bi-heart"></i>
+                        </button>
+                      </form>
+                    {% endif %}
+                  {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
+                      <i class="bi bi-heart"></i>
+                    </a>
+                  {% endif %}
+                </div>
                 <span class="product-price">{{ item.formatted_price }}</span>
                 <span class="btn-view-product">
                   View <i class="bi bi-arrow-right"></i>

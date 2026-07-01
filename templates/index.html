@@ -145,7 +145,36 @@
                 <span class="product-category-tag">{{ product.category }}</span>
               {% endif %}
               <h5 class="product-name">{{ product.name }}</h5>
-              <p class="product-price" style="margin-top:0.5rem;margin-bottom:0;">{{ product.formatted_price }}</p>
+              
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                <p class="product-price" style="margin:0;">{{ product.formatted_price }}</p>
+                {% set in_wishlist = False %}
+                {% if current_user.is_authenticated %}
+                  {% set in_wishlist = current_user.wishlist_items.filter_by(product_id=product.id).first() is not none %}
+                {% endif %}
+                
+                <div style="position:relative; z-index: 10;">
+                  {% if current_user.is_authenticated %}
+                    {% if in_wishlist %}
+                      <form method="POST" action="{{ url_for('wishlist.remove', product_id=product.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--accent);">
+                          <i class="bi bi-heart-fill"></i>
+                        </button>
+                      </form>
+                    {% else %}
+                      <form method="POST" action="{{ url_for('wishlist.add', product_id=product.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
+                          <i class="bi bi-heart"></i>
+                        </button>
+                      </form>
+                    {% endif %}
+                  {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
+                      <i class="bi bi-heart"></i>
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
             </div>
           </a>
         </div>
