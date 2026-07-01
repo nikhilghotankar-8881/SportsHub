@@ -15,32 +15,25 @@
 
   <!-- Stats Cards -->
   <div class="row g-4 mb-4">
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-sm-4">
       <div class="dashboard-card text-center">
-        <div class="card-icon icon-blue mx-auto"><i class="bi bi-cart-fill" style="color:#00c6ff;"></i></div>
-        <span class="card-value">0</span>
-        <span class="card-label">Orders</span>
+        <div class="card-icon icon-blue mx-auto"><i class="bi bi-box-seam" style="color:#00c6ff;"></i></div>
+        <span class="card-value">{{ total_orders }}</span>
+        <span class="card-label">Total Orders</span>
       </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-sm-4">
       <div class="dashboard-card text-center">
         <div class="card-icon icon-orange mx-auto"><i class="bi bi-heart-fill" style="color:#ff6b35;"></i></div>
-        <span class="card-value">0</span>
+        <span class="card-value">{{ total_wishlist_items }}</span>
         <span class="card-label">Wishlist Items</span>
       </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-sm-4">
       <div class="dashboard-card text-center">
-        <div class="card-icon icon-green mx-auto"><i class="bi bi-star-fill" style="color:#10b981;"></i></div>
-        <span class="card-value">0</span>
-        <span class="card-label">Reviews</span>
-      </div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="dashboard-card text-center">
-        <div class="card-icon icon-purple mx-auto"><i class="bi bi-people-fill" style="color:#8b5cf6;"></i></div>
-        <span class="card-value">1</span>
-        <span class="card-label">Community</span>
+        <div class="card-icon icon-green mx-auto"><i class="bi bi-cart-fill" style="color:#10b981;"></i></div>
+        <span class="card-value">{{ total_cart_items }}</span>
+        <span class="card-label">Cart Items</span>
       </div>
     </div>
   </div>
@@ -86,6 +79,61 @@
             <i class="bi bi-box-arrow-right"></i> Logout
           </a>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="dashboard-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin:0;">
+            <i class="bi bi-clock-history" style="color:var(--primary);"></i> Recent Orders
+          </h5>
+          <a href="{{ url_for('orders.order_history') }}" class="btn-outline-custom btn-sm">View All</a>
+        </div>
+        
+        {% if recent_orders %}
+          <div class="table-responsive">
+            <table class="table custom-table align-middle">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                  <td><strong>#{{ '%05d' | format(order.id) }}</strong></td>
+                  <td>{{ order.created_at.strftime('%b %d, %Y') }}</td>
+                  <td>
+                    {% set badge_class, icon = order.status_badge %}
+                    <span class="badge bg-{{ badge_class }} bg-opacity-10 text-{{ badge_class }} border border-{{ badge_class }}">
+                      <i class="bi {{ icon }} me-1"></i> {{ order.status|title }}
+                    </span>
+                  </td>
+                  <td>{{ order.formatted_total }}</td>
+                  <td class="text-end">
+                    <a href="{{ url_for('orders.order_detail', order_id=order.id) }}" class="btn btn-sm btn-outline-secondary">
+                      <i class="bi bi-eye"></i> View
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-box-seam" style="font-size: 2rem;"></i>
+            <p class="mt-2 mb-0">No orders placed yet.</p>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>

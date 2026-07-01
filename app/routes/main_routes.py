@@ -22,4 +22,16 @@ def index():
 @main.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", title="Dashboard")
+    total_orders = current_user.orders.count()
+    total_wishlist_items = current_user.wishlist_items.count()
+    total_cart_items = sum(item.quantity for item in current_user.cart_items.all())
+    recent_orders = current_user.orders.limit(5).all()
+    
+    return render_template(
+        "dashboard.html",
+        title="Dashboard",
+        total_orders=total_orders,
+        total_wishlist_items=total_wishlist_items,
+        total_cart_items=total_cart_items,
+        recent_orders=recent_orders
+    )
