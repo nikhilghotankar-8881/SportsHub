@@ -48,6 +48,12 @@ class User(UserMixin, db.Model):
         cascade="all, delete-orphan",
         lazy="dynamic",
     )
+    reviews = db.relationship(
+        "Review",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -90,6 +96,12 @@ class Product(db.Model):
         cascade="all, delete-orphan",
         lazy="dynamic",
     )
+    reviews = db.relationship(
+        "Review",
+        back_populates="product",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )
 
     def __repr__(self):
         return f"<Product {self.name}>"
@@ -101,6 +113,16 @@ class Product(db.Model):
     @property
     def formatted_price(self):
         return f"₹{self.price:,.2f}"
+
+    @property
+    def average_rating(self):
+        # Only fetch the scalar instead of loading all review objects
+        avg = db.session.query(db.func.avg(Review.rating)).filter(Review.product_id == self.id).scalar()
+        return round(float(avg), 1) if avg else 0.0
+
+    @property
+    def total_reviews(self):
+        return self.reviews.count()
 
 
 class CartItem(db.Model):
@@ -228,3 +250,23 @@ class Wishlist(db.Model):
 
     def __repr__(self):
         return f"<Wishlist user={self.user_id} product={self.product_id}>"
+
+class Review(db.Model):
+    __tablename__ = "reviews"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    product_id  = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    rating      = db.Column(db.Integer, nullable=False)
+    review_text = db.Column(db.Text, nullable=False)
+    created_at  = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "product_id", name="uq_review_user_product"),
+    )
+
+    user    = db.relationship("User",    back_populates="reviews")
+    product = db.relationship("Product", back_populates="reviews")
+
+    def __repr__(self):
+        return f"<Review user={self.user_id} product={self.product_id} rating={self.rating}>"

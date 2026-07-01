@@ -15,25 +15,32 @@
 
   <!-- Stats Cards -->
   <div class="row g-4 mb-4">
-    <div class="col-sm-4">
-      <div class="dashboard-card text-center">
+    <div class="col-sm-6 col-lg-3">
+      <div class="dashboard-card text-center h-100">
         <div class="card-icon icon-blue mx-auto"><i class="bi bi-box-seam" style="color:#00c6ff;"></i></div>
         <span class="card-value">{{ total_orders }}</span>
         <span class="card-label">Total Orders</span>
       </div>
     </div>
-    <div class="col-sm-4">
-      <div class="dashboard-card text-center">
+    <div class="col-sm-6 col-lg-3">
+      <div class="dashboard-card text-center h-100">
         <div class="card-icon icon-orange mx-auto"><i class="bi bi-heart-fill" style="color:#ff6b35;"></i></div>
         <span class="card-value">{{ total_wishlist_items }}</span>
         <span class="card-label">Wishlist Items</span>
       </div>
     </div>
-    <div class="col-sm-4">
-      <div class="dashboard-card text-center">
+    <div class="col-sm-6 col-lg-3">
+      <div class="dashboard-card text-center h-100">
         <div class="card-icon icon-green mx-auto"><i class="bi bi-cart-fill" style="color:#10b981;"></i></div>
         <span class="card-value">{{ total_cart_items }}</span>
         <span class="card-label">Cart Items</span>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="dashboard-card text-center h-100">
+        <div class="card-icon icon-blue mx-auto" style="background: rgba(251,191,36,0.15);"><i class="bi bi-star-fill" style="color:#fbbf24;"></i></div>
+        <span class="card-value">{{ total_reviews }}</span>
+        <span class="card-label">Total Reviews</span>
       </div>
     </div>
   </div>
@@ -78,6 +85,10 @@
           <a href="{{ url_for('main.index') }}" class="btn-outline-custom" id="dashboard-home-btn"
              style="justify-content:center;text-decoration:none;">
             <i class="bi bi-house-door"></i> Back to Home
+          </a>
+          <a href="{{ url_for('reviews.my_reviews') }}" class="btn-outline-custom" id="dashboard-reviews-btn"
+             style="justify-content:center;text-decoration:none;">
+            <i class="bi bi-star"></i> My Reviews
           </a>
           <a href="{{ url_for('main.change_password') }}" class="btn-outline-custom" id="dashboard-change-pwd-btn"
              style="justify-content:center;text-decoration:none;">

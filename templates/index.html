@@ -144,7 +144,20 @@
               {% if product.category %}
                 <span class="product-category-tag">{{ product.category }}</span>
               {% endif %}
-              <h5 class="product-name">{{ product.name }}</h5>
+              <h5 class="product-name" style="margin-bottom: 0.3rem;">{{ product.name }}</h5>
+              <div style="display: flex; align-items: center; gap: 0.3rem;">
+                <div style="color: #fbbf24; font-size: 0.85rem;">
+                  {% set avg_rating = product.average_rating|round|int %}
+                  {% for i in range(1, 6) %}
+                    {% if i <= avg_rating %}
+                      <i class="bi bi-star-fill"></i>
+                    {% else %}
+                      <i class="bi bi-star"></i>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">({{ product.total_reviews }})</span>
+              </div>
               
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
                 <p class="product-price" style="margin:0;">{{ product.formatted_price }}</p>
@@ -219,8 +232,21 @@
               {% if product.category %}
                 <span class="product-category-tag">{{ product.category }}</span>
               {% endif %}
-              <h5 class="product-name">{{ product.name }}</h5>
-              <p class="product-price" style="margin-top:0.5rem;margin-bottom:0;">{{ product.formatted_price }}</p>
+              <h5 class="product-name" style="margin-bottom: 0.3rem;">{{ product.name }}</h5>
+              <div style="display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.5rem;">
+                <div style="color: #fbbf24; font-size: 0.85rem;">
+                  {% set avg_rating = product.average_rating|round|int %}
+                  {% for i in range(1, 6) %}
+                    {% if i <= avg_rating %}
+                      <i class="bi bi-star-fill"></i>
+                    {% else %}
+                      <i class="bi bi-star"></i>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">({{ product.total_reviews }})</span>
+              </div>
+              <p class="product-price" style="margin-bottom:0;">{{ product.formatted_price }}</p>
             </div>
           </a>
         </div>

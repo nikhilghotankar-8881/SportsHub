@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, abort, request
-from app.models import Product
+from app.models import Product, Review
+from app.forms import ReviewForm
 
 products_bp = Blueprint("products", __name__, url_prefix="/products")
 
@@ -56,10 +57,15 @@ def product_detail(product_id):
         .limit(4)
         .all()
     )
+    
+    review_form = ReviewForm()
+    reviews = product.reviews.order_by(Review.created_at.desc()).all()
 
     return render_template(
         "product_detail.html",
         title=f"{product.name} – SportsHub",
         product=product,
         related=related,
+        review_form=review_form,
+        reviews=reviews,
     )

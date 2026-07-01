@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from flask_login import current_user
 from app.models import User
@@ -88,3 +88,16 @@ class ChangePasswordForm(FlaskForm):
     )
 
     submit = SubmitField("Update Password")
+
+class ReviewForm(FlaskForm):
+    rating = SelectField(
+        "Rating",
+        choices=[(5, '5 Stars'), (4, '4 Stars'), (3, '3 Stars'), (2, '2 Stars'), (1, '1 Star')],
+        coerce=int,
+        validators=[DataRequired()]
+    )
+    review_text = TextAreaField(
+        "Review",
+        validators=[DataRequired(), Length(min=10, max=1000, message="Review must be between 10 and 1000 characters.")]
+    )
+    submit = SubmitField("Submit Review")

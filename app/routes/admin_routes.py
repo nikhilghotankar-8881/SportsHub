@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from functools import wraps
 
 from app import db
-from app.models import User, Product, Order, OrderStatus
+from app.models import User, Product, Order, OrderStatus, Review
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -123,3 +123,27 @@ def order_update_status(order_id):
         flash("Invalid status provided.", "danger")
         
     return redirect(url_for("admin.orders"))
+
+@admin_bp.route("/reviews")
+@login_required
+@admin_required
+def reviews():
+    product_id = request.args.get('product_id')
+    user_id = request.args.get('user_id')
+    
+    query = Review.query
+    if product_id:
+        query = query.filter_by(product_id=product_id)
+    if user_id:
+        query = query.filter_by(user_id=user_id)
+        
+    reviews = query.order_by(Review.created_at.desc()).all()
+    products = Product.query.order_by(Product.name).all()
+    users = User.query.order_by(User.name).all()
+    
+    return render_template("admin_reviews.html", 
+                           reviews=reviews, 
+                           products=products, 
+                           users=users,
+                           selected_product=int(product_id) if product_id else None,
+                           selected_user=int(user_id) if user_id else None)

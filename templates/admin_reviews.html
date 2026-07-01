@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Reviews – Admin – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+  <!-- Header -->
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-star" style="color:var(--primary);"></i> Manage <span class="text-gradient">Reviews</span>
+      </h1>
+      <p class="page-subtitle">Moderate customer reviews.</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn-outline-custom">
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <div class="dashboard-card mt-4">
+    <form method="GET" action="{{ url_for('admin.reviews') }}" class="mb-4" style="display:flex; gap:1rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:200px;">
+        <select name="product_id" class="form-select" onchange="this.form.submit()">
+          <option value="">All Products</option>
+          {% for p in products %}
+            <option value="{{ p.id }}" {% if selected_product == p.id %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <select name="user_id" class="form-select" onchange="this.form.submit()">
+          <option value="">All Users</option>
+          {% for u in users %}
+            <option value="{{ u.id }}" {% if selected_user == u.id %}selected{% endif %}>{{ u.name }} ({{ u.email }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <a href="{{ url_for('admin.reviews') }}" class="btn btn-outline-secondary">Clear Filters</a>
+      </div>
+    </form>
+    
+    {% if reviews %}
+      <div class="table-responsive">
+        <table class="table custom-table align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product</th>
+              <th>User</th>
+              <th>Rating</th>
+              <th style="max-width: 300px;">Review Text</th>
+              <th>Date</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for review in reviews %}
+            <tr>
+              <td>#{{ review.id }}</td>
+              <td>
+                <a href="{{ url_for('products.product_detail', product_id=review.product_id) }}" target="_blank" style="text-decoration:none; font-weight:500;">
+                  {{ review.product.name }}
+                </a>
+              </td>
+              <td>
+                <div style="font-weight:600;">{{ review.user.name }}</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">{{ review.user.email }}</div>
+              </td>
+              <td>
+                <div style="color: #fbbf24; font-size: 0.9rem; white-space:nowrap;">
+                  {% for i in range(1, 6) %}
+                    {% if i <= review.rating %}
+                      <i class="bi bi-star-fill"></i>
+                    {% else %}
+                      <i class="bi bi-star"></i>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </td>
+              <td style="max-width: 300px;">
+                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ review.review_text }}">
+                  {{ review.review_text }}
+                </div>
+              </td>
+              <td>{{ review.created_at.strftime('%d %b %Y') }}</td>
+              <td class="text-end">
+                <form action="{{ url_for('reviews.delete_review', review_id=review.id, next='admin') }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this review?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-star" style="font-size: 2rem;"></i>
+        <p class="mt-2 mb-0">No reviews found.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Review – SportsHub{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card" style="max-width: 600px;">
+    
+    <div class="auth-header text-center mb-4">
+      <div class="auth-icon mx-auto mb-3">
+        <i class="bi bi-pencil-square" style="font-size:1.8rem; color:var(--primary);"></i>
+      </div>
+      <h2 class="auth-title">Edit Your Review</h2>
+      <p class="auth-subtitle">Update your review for {{ product.name }}</p>
+    </div>
+
+    <form method="POST" action="">
+      {{ form.csrf_token }}
+      
+      <div class="mb-4">
+        <label class="form-label" style="font-weight: 500;">{{ form.rating.label.text }}</label>
+        {{ form.rating(class="form-select custom-select") }}
+        {% if form.rating.errors %}
+          <div class="text-danger mt-1" style="font-size:0.85rem;">
+            {% for error in form.rating.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      
+      <div class="mb-4">
+        <label class="form-label" style="font-weight: 500;">{{ form.review_text.label.text }}</label>
+        {{ form.review_text(class="form-control", rows="6") }}
+        {% if form.review_text.errors %}
+          <div class="text-danger mt-1" style="font-size:0.85rem;">
+            {% for error in form.review_text.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      
+      <div style="display:flex; gap:1rem;">
+        <button type="submit" class="btn-primary-custom w-100 justify-content-center">
+          Update Review
+        </button>
+        {% if request.args.get('next') == 'my_reviews' %}
+          <a href="{{ url_for('reviews.my_reviews') }}" class="btn-outline-custom w-100 justify-content-center" style="text-decoration:none;">Cancel</a>
+        {% else %}
+          <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="btn-outline-custom w-100 justify-content-center" style="text-decoration:none;">Cancel</a>
+        {% endif %}
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

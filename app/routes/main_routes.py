@@ -27,6 +27,7 @@ def dashboard():
     total_orders = current_user.orders.count()
     total_wishlist_items = current_user.wishlist_items.count()
     total_cart_items = sum(item.quantity for item in current_user.cart_items.all())
+    total_reviews = current_user.reviews.count()
     recent_orders = current_user.orders.limit(5).all()
     
     return render_template(
@@ -35,6 +36,7 @@ def dashboard():
         total_orders=total_orders,
         total_wishlist_items=total_wishlist_items,
         total_cart_items=total_cart_items,
+        total_reviews=total_reviews,
         recent_orders=recent_orders
     )
 
