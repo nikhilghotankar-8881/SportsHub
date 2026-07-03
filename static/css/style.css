@@ -1134,3 +1134,111 @@ a:hover {
     width: 160px;
   }
 }
+
+/* ========================================
+   Phase 13 – Additional Styles
+   ======================================== */
+
+/* ── Bootstrap Toast custom styling ── */
+.toast-success  { background: rgba(16,185,129,0.92); color: #fff; border-radius: 10px; }
+.toast-danger   { background: rgba(239,68,68,0.92);  color: #fff; border-radius: 10px; }
+.toast-info     { background: rgba(59,130,246,0.92); color: #fff; border-radius: 10px; }
+.toast-warning  { background: rgba(245,158,11,0.92); color: #fff; border-radius: 10px; }
+
+.toast-container { z-index: 11000 !important; }
+
+/* ── Stock badge enhancements ── */
+.badge-in-stock  { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);  color: #10b981; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.badge-low-stock { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3);  color: #f59e0b; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.badge-out-stock { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.3);   color: #ef4444; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+
+/* ── Coupon code input ── */
+.coupon-code-input {
+  font-family: 'Outfit', monospace, sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── Order tracking progress bar ── */
+.tracking-progress {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  gap: 0;
+}
+
+/* ── Admin sidebar quick links ── */
+.admin-quick-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+.admin-quick-link:hover {
+  background: rgba(0,198,255,0.08);
+  color: var(--primary);
+}
+
+/* ── FAQ Accordion overrides ── */
+.accordion-button::after { filter: invert(1); }
+.accordion-button:not(.collapsed) { color: var(--primary); }
+.accordion-body { background: var(--bg-card); }
+
+/* ── Contact page form ── */
+textarea.form-control-custom {
+  resize: vertical;
+  min-height: 120px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  width: 100%;
+  outline: none;
+  transition: var(--transition);
+}
+textarea.form-control-custom:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,198,255,0.1);
+}
+
+/* ── About page team/stats ── */
+.stat-card { text-align: center; padding: 2rem 1.5rem; }
+.team-card  { text-align: center; padding: 2rem 1.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.team-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+
+/* ── Invoice download btn ── */
+.btn-invoice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: var(--transition);
+}
+.btn-invoice:hover {
+  background: rgba(239,68,68,0.2);
+  color: #ef4444;
+}
+
+/* ── Responsive footer grid ── */
+@media (max-width: 576px) {
+  .toast-container { padding: 0.75rem !important; }
+}
+

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Contact Messages – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <!-- Header -->
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-chat-dots" style="color:var(--primary);"></i>
+        Contact <span class="text-gradient">Messages</span>
+      </h1>
+      <p class="page-subtitle">Customer enquiries and support messages.</p>
+    </div>
+    <div style="display:flex;gap:0.75rem;align-items:center;">
+      {% if unread_count > 0 %}
+      <span style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+                   color:#ef4444;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:700;">
+        {{ unread_count }} Unread
+      </span>
+      {% endif %}
+      <a href="{{ url_for('admin.dashboard') }}" class="btn-outline-custom" style="text-decoration:none;">
+        <i class="bi bi-arrow-left"></i> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="dashboard-card" style="margin-bottom:1.5rem;">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);">Filter:</span>
+      <a href="{{ url_for('admin.contacts') }}"
+         class="{% if current_filter == 'all' %}btn-primary-custom{% else %}btn-outline-custom{% endif %}"
+         style="text-decoration:none;font-size:0.8rem;padding:6px 14px;">All</a>
+      <a href="{{ url_for('admin.contacts', filter='unread') }}"
+         class="{% if current_filter == 'unread' %}btn-primary-custom{% else %}btn-outline-custom{% endif %}"
+         style="text-decoration:none;font-size:0.8rem;padding:6px 14px;">
+        Unread ({{ unread_count }})
+      </a>
+      <a href="{{ url_for('admin.contacts', filter='read') }}"
+         class="{% if current_filter == 'read' %}btn-primary-custom{% else %}btn-outline-custom{% endif %}"
+         style="text-decoration:none;font-size:0.8rem;padding:6px 14px;">Read</a>
+    </div>
+  </div>
+
+  {% if contacts %}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    {% for msg in contacts %}
+    <div class="dashboard-card"
+         style="{% if not msg.is_read %}border-left:3px solid var(--primary);{% endif %}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;flex-wrap:wrap;">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(92,107,192,0.15);
+                        color:var(--primary);font-weight:800;display:flex;align-items:center;
+                        justify-content:center;font-size:1rem;flex-shrink:0;">
+              {{ msg.name[0].upper() }}
+            </div>
+            <div>
+              <p style="font-weight:700;font-size:0.95rem;margin:0;">{{ msg.name }}</p>
+              <p style="font-size:0.78rem;color:var(--text-muted);margin:0;">{{ msg.email }}</p>
+            </div>
+            {% if not msg.is_read %}
+            <span style="background:rgba(92,107,192,0.12);color:var(--primary);
+                         padding:2px 8px;border-radius:20px;font-size:0.72rem;font-weight:700;">
+              NEW
+            </span>
+            {% endif %}
+            <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">
+              {{ msg.created_at.strftime('%d %b %Y, %I:%M %p') }}
+            </span>
+          </div>
+
+          <h6 style="font-weight:700;color:var(--text-primary);margin-bottom:0.5rem;">{{ msg.subject }}</h6>
+          <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;line-height:1.6;">{{ msg.message }}</p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
+          {% if not msg.is_read %}
+          <form action="{{ url_for('admin.contact_mark_read', contact_id=msg.id) }}" method="POST">
+            <button type="submit" class="btn-outline-custom"
+                    style="font-size:0.78rem;padding:5px 12px;width:100%;">
+              <i class="bi bi-check2-all"></i> Mark Read
+            </button>
+          </form>
+          {% endif %}
+          <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject }}" class="btn-primary-custom"
+             style="text-decoration:none;font-size:0.78rem;padding:5px 12px;justify-content:center;">
+            <i class="bi bi-reply"></i> Reply
+          </a>
+          <form action="{{ url_for('admin.contact_delete', contact_id=msg.id) }}" method="POST"
+                onsubmit="return confirm('Delete this message?');">
+            <button type="submit" class="btn-outline-custom"
+                    style="font-size:0.78rem;padding:5px 12px;border-color:#ef4444;color:#ef4444;width:100%;">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="dashboard-card" style="text-align:center;padding:3rem;">
+    <i class="bi bi-chat-square" style="font-size:3rem;color:var(--text-muted);"></i>
+    <h5 style="color:var(--text-secondary);margin-top:1rem;">No messages found</h5>
+    <p style="color:var(--text-muted);font-size:0.85rem;">
+      {% if current_filter == 'unread' %}All messages have been read.
+      {% else %}No customer messages yet.{% endif %}
+    </p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

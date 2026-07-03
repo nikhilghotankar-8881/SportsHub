@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Inventory Management – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <!-- Header -->
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-boxes" style="color:var(--primary);"></i>
+        Inventory <span class="text-gradient">Management</span>
+      </h1>
+      <p class="page-subtitle">Track stock levels, prevent overselling, manage restocking.</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn-outline-custom" style="text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> Dashboard
+    </a>
+  </div>
+
+  <!-- ── Stats Row ── -->
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;"><i class="bi bi-box-seam" style="color:var(--primary);"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;">{{ total_products }}</h4>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;">Total Products</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;"><i class="bi bi-stack" style="color:var(--success);"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;">{{ total_inventory }}</h4>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;">Total Units</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;"><i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b;"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;color:#f59e0b;">{{ low_stock_count }}</h4>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;">Low Stock</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;"><i class="bi bi-x-circle-fill" style="color:#ef4444;"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;color:#ef4444;">{{ out_of_stock_count }}</h4>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;">Out of Stock</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inventory Value Banner -->
+  <div style="background:linear-gradient(135deg,rgba(92,107,192,0.12),rgba(139,92,246,0.08));
+              border:1px solid rgba(92,107,192,0.2);border-radius:var(--radius);
+              padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;">
+    <i class="bi bi-currency-rupee" style="font-size:2rem;color:var(--primary);"></i>
+    <div>
+      <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Total Inventory Value</p>
+      <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;
+                 background:var(--gradient-accent);-webkit-background-clip:text;
+                 -webkit-text-fill-color:transparent;background-clip:text;">
+        ₹{{ "{:,.2f}".format(inventory_value) }}
+      </h3>
+    </div>
+  </div>
+
+  <!-- ── Filter Tabs ── -->
+  <div class="dashboard-card" style="margin-bottom:1.5rem;">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);">View:</span>
+      <a href="{{ url_for('admin.inventory') }}"
+         class="{% if current_filter == 'all' %}btn-primary-custom{% else %}btn-outline-custom{% endif %}"
+         style="text-decoration:none;font-size:0.8rem;padding:6px 14px;">All Products</a>
+      <a href="{{ url_for('admin.inventory', filter='low') }}"
+         class="{% if current_filter == 'low' %}btn-primary-custom{% else %}btn-outline-custom{% endif %}"
+         style="text-decoration:none;font-size:0.8rem;padding:6px 14px;">
+        <i class="bi bi-exclamation-triangle"></i> Low Stock ({{ low_stock_count }})
+      </a>
+      <a href="{{ url_for('admin.inventory', filter='out') }}"
+         class="{% if current_filter == 'out' %}btn-primary-custom{% else %}btn-outline-custom{% endif %}"
+         style="text-decoration:none;font-size:0.8rem;padding:6px 14px;">
+        <i class="bi bi-x-circle"></i> Out of Stock ({{ out_of_stock_count }})
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Bulk Update Form ── -->
+  <div class="dashboard-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:1rem;">
+      <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin:0;">
+        <i class="bi bi-list-check" style="color:var(--primary);"></i> Stock Levels
+      </h5>
+      <button type="submit" form="bulk-update-form" class="btn-primary-custom">
+        <i class="bi bi-save"></i> Save All Changes
+      </button>
+    </div>
+
+    {% if products %}
+    <form id="bulk-update-form" action="{{ url_for('admin.inventory_bulk_update') }}" method="POST">
+      <div class="table-responsive">
+        <table class="table" style="color:var(--text-primary);margin:0;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:10px 8px;">Product</th>
+              <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:10px 8px;">Category</th>
+              <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:10px 8px;">Price</th>
+              <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:10px 8px;">Status</th>
+              <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:10px 8px;">Stock</th>
+              <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:10px 8px;">Inv. Value</th>
+              <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:10px 8px;">Quick Update</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for product in products %}
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px 8px;">
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                  {% if product.image %}
+                  <img src="{{ product.image }}" alt="{{ product.name }}"
+                       style="width:40px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid var(--border);" />
+                  {% else %}
+                  <div style="width:40px;height:40px;border-radius:8px;background:var(--bg-card-2);
+                              display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🏅</div>
+                  {% endif %}
+                  <div>
+                    <p style="font-weight:600;font-size:0.85rem;margin:0;overflow:hidden;
+                              text-overflow:ellipsis;white-space:nowrap;max-width:180px;">{{ product.name }}</p>
+                  </div>
+                </div>
+              </td>
+              <td style="padding:10px 8px;font-size:0.82rem;color:var(--text-secondary);">
+                {{ product.category or '—' }}
+              </td>
+              <td style="padding:10px 8px;font-weight:600;">{{ product.formatted_price }}</td>
+              <td style="padding:10px 8px;">
+                {% if product.is_out_of_stock %}
+                  <span class="badge bg-danger" style="font-size:0.72rem;">Out of Stock</span>
+                {% elif product.is_low_stock %}
+                  <span class="badge bg-warning text-dark" style="font-size:0.72rem;">⚠ Low Stock</span>
+                {% else %}
+                  <span class="badge bg-success" style="font-size:0.72rem;">In Stock</span>
+                {% endif %}
+              </td>
+              <td style="padding:10px 8px;">
+                <input type="number" name="stock_{{ product.id }}"
+                       value="{{ product.stock }}" min="0" step="1"
+                       style="width:80px;padding:5px 8px;border:1px solid var(--border);
+                              border-radius:6px;background:var(--bg-card-2);
+                              color:var(--text-primary);font-size:0.85rem;outline:none;
+                              {% if product.is_out_of_stock %}border-color:#ef4444;
+                              {% elif product.is_low_stock %}border-color:#f59e0b;{% endif %}" />
+              </td>
+              <td style="padding:10px 8px;font-size:0.85rem;font-weight:600;">
+                ₹{{ "{:,.0f}".format(product.inventory_value) }}
+              </td>
+              <td style="padding:10px 8px;">
+                <form action="{{ url_for('admin.inventory_update', product_id=product.id) }}"
+                      method="POST" style="display:flex;gap:0.4rem;">
+                  <input type="number" name="stock" value="{{ product.stock }}" min="0"
+                         style="width:70px;padding:4px 6px;border:1px solid var(--border);
+                                border-radius:6px;background:var(--bg-card-2);
+                                color:var(--text-primary);font-size:0.8rem;outline:none;" />
+                  <button type="submit" class="btn-primary-custom" style="padding:4px 10px;font-size:0.78rem;">
+                    <i class="bi bi-check2"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:1rem;display:flex;justify-content:flex-end;">
+        <button type="submit" class="btn-primary-custom">
+          <i class="bi bi-save"></i> Save All Changes
+        </button>
+      </div>
+    </form>
+
+    {% else %}
+    <div style="text-align:center;padding:2rem;">
+      <i class="bi bi-inbox" style="font-size:3rem;color:var(--text-muted);"></i>
+      <p style="color:var(--text-secondary);margin-top:1rem;">No products match this filter.</p>
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}

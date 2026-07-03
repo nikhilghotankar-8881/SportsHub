@@ -1,220 +1,342 @@
 {% extends "base.html" %}
 {% block title %}Order #{{ order.id }} – SportsHub{% endblock %}
 
-{% block content %}
-<div class="dashboard-wrapper" style="max-width:900px;">
+{% block extra_head %}
+<style>
+/* ── Order Tracking Timeline ── */
+.tracking-timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  overflow-x: auto;
+  padding: 1.5rem 0;
+  flex-wrap: nowrap;
+}
+.tracking-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 90px;
+  position: relative;
+}
+.tracking-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: calc(50% + 22px);
+  right: calc(-50% + 22px);
+  height: 3px;
+  background: var(--border);
+  z-index: 0;
+}
+.tracking-step.done:not(:last-child)::after {
+  background: var(--success);
+}
+.step-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: 3px solid var(--border);
+  background: var(--bg-card-2);
+  color: var(--text-muted);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s;
+}
+.tracking-step.done .step-icon {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+.tracking-step.active .step-icon {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(92,107,192,0.2);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(92,107,192,0.2); }
+  50%       { box-shadow: 0 0 0 8px rgba(92,107,192,0.1); }
+}
+.step-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  max-width: 80px;
+}
+.tracking-step.done .step-label,
+.tracking-step.active .step-label {
+  color: var(--text-primary);
+}
 
-  <!-- Breadcrumb -->
-  <nav class="sh-breadcrumb">
-    <a href="{{ url_for('main.index') }}"><i class="bi bi-house-door"></i> Home</a>
-    <span class="sep">/</span>
-    <a href="{{ url_for('orders.order_history') }}">My Orders</a>
-    <span class="sep">/</span>
-    <span class="current">Order #{{ '%05d'|format(order.id) }}</span>
-  </nav>
+/* Cancelled style */
+.cancelled-banner {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* Status History */
+.history-timeline {
+  position: relative;
+  padding-left: 1.5rem;
+}
+.history-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+.history-item {
+  position: relative;
+  padding-bottom: 1.2rem;
+}
+.history-item::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid var(--bg-card);
+}
+.history-item:last-child::before {
+  background: var(--success);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
 
   <!-- Header -->
-  <div class="page-header" style="display:flex;align-items:center;
-       justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
     <div>
-      <h1 class="page-title" style="font-size:1.8rem;">
-        Order <span class="text-gradient">#{{ '%05d'|format(order.id) }}</span>
+      <h1 class="page-title">
+        <i class="bi bi-receipt" style="color:var(--primary);"></i>
+        Order <span class="text-gradient">#{{ order.id }}</span>
       </h1>
-      <p class="page-subtitle">
-        Placed on {{ order.created_at.strftime('%d %B %Y at %I:%M %p') }}
-      </p>
+      <p class="page-subtitle">Placed on {{ order.created_at.strftime('%d %B %Y at %I:%M %p') }}</p>
     </div>
-    {% set badge_color, badge_icon = order.status_badge %}
-    <span style="display:inline-flex;align-items:center;gap:0.5rem;
-                 padding:0.5rem 1.2rem;border-radius:50px;font-size:0.88rem;font-weight:700;
-                 text-transform:uppercase;letter-spacing:0.5px;
-                 {% if order.status == 'confirmed' %}
-                   background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;
-                 {% elif order.status == 'shipped' %}
-                   background:rgba(0,198,255,0.12);border:1px solid rgba(0,198,255,0.3);color:var(--primary);
-                 {% elif order.status == 'delivered' %}
-                   background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:var(--success);
-                 {% elif order.status == 'cancelled' %}
-                   background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;
-                 {% else %}
-                   background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;
-                 {% endif %}">
-      <i class="bi {{ badge_icon }}"></i> {{ order.status|title }}
+    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+      <!-- Download Invoice -->
+      <a href="{{ url_for('invoice.download', order_id=order.id) }}"
+         class="btn-outline-custom" style="text-decoration:none;" id="download-invoice-btn">
+        <i class="bi bi-file-earmark-pdf"></i> Download Invoice
+      </a>
+      <!-- Cancel Order -->
+      {% if can_cancel %}
+      <form action="{{ url_for('orders.cancel_order', order_id=order.id) }}" method="POST"
+            onsubmit="return confirm('Are you sure you want to cancel this order?');">
+        <button type="submit" class="btn-outline-custom"
+                style="border-color:var(--danger,#ef4444);color:var(--danger,#ef4444);" id="cancel-order-btn">
+          <i class="bi bi-x-circle"></i> Cancel Order
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Status Badge -->
+  <div style="margin-bottom:1.5rem;">
+    <span class="badge bg-{{ order.status_badge[0] }}" style="font-size:0.9rem;padding:8px 16px;">
+      <i class="bi {{ order.status_badge[1] }} me-1"></i> {{ order.status_label }}
     </span>
   </div>
 
-  <div class="row g-4 align-items-start">
+  <!-- ══ Order Tracking Timeline ══════════════════════════════ -->
+  {% if not is_cancelled %}
+  <div class="dashboard-card" style="margin-bottom:1.5rem;overflow-x:auto;">
+    <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;">
+      <i class="bi bi-geo-alt-fill" style="color:var(--primary);"></i> Order Tracking
+    </h5>
+    <div class="tracking-timeline">
+      {% for step_status, step_label, step_icon in tracking_steps %}
+        {% set step_idx = loop.index0 %}
+        {% if step_idx < current_idx %}
+          <div class="tracking-step done">
+        {% elif step_idx == current_idx %}
+          <div class="tracking-step active">
+        {% else %}
+          <div class="tracking-step">
+        {% endif %}
+          <div class="step-icon">
+            {% if step_idx < current_idx %}
+              <i class="bi bi-check-lg"></i>
+            {% else %}
+              <i class="bi {{ step_icon }}"></i>
+            {% endif %}
+          </div>
+          <span class="step-label">{{ step_label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="cancelled-banner">
+    <i class="bi bi-x-circle-fill" style="color:#ef4444;font-size:1.4rem;"></i>
+    <div>
+      <strong style="color:#ef4444;">Order Cancelled</strong>
+      <p style="color:var(--text-secondary);margin:0;font-size:0.85rem;">This order has been cancelled and stock has been restored.</p>
+    </div>
+  </div>
+  {% endif %}
 
-    <!-- ══ LEFT: Items Table ══════════════════════════════ -->
+  <div class="row g-4">
+
+    <!-- ══ LEFT: Order Items + Status History ══════════════ -->
     <div class="col-lg-8">
-      <div class="dashboard-card" style="padding:0;overflow:hidden;">
 
-        <div style="padding:1.2rem 1.4rem;border-bottom:1px solid var(--border);">
-          <h6 style="font-family:'Outfit',sans-serif;font-weight:700;margin:0;">
-            <i class="bi bi-box-seam" style="color:var(--primary);"></i>
-            {{ order.order_items|length }} Item{{ 's' if order.order_items|length != 1 }}
-          </h6>
+      <!-- Order Items -->
+      <div class="dashboard-card" style="margin-bottom:1.5rem;">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;">
+          <i class="bi bi-bag" style="color:var(--primary);"></i> Items Ordered
+        </h5>
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          {% for item in order.order_items %}
+          <div style="display:flex;align-items:center;gap:1rem;padding-bottom:1rem;
+                      border-bottom:1px solid var(--border);">
+            {% if item.product.image %}
+              <img src="{{ item.product.image }}" alt="{{ item.product.name }}"
+                   style="width:64px;height:64px;object-fit:cover;border-radius:10px;
+                          border:1px solid var(--border);flex-shrink:0;" />
+            {% else %}
+              <div style="width:64px;height:64px;border-radius:10px;background:var(--bg-card-2);
+                          border:1px solid var(--border);display:flex;align-items:center;
+                          justify-content:center;font-size:1.8rem;flex-shrink:0;">🏅</div>
+            {% endif %}
+            <div style="flex:1;min-width:0;">
+              <p style="font-weight:600;margin:0;font-size:0.95rem;">{{ item.product.name }}</p>
+              <span style="font-size:0.82rem;color:var(--text-secondary);">
+                {{ item.product.category or 'General' }}
+              </span>
+              <br>
+              <span style="font-size:0.85rem;color:var(--text-secondary);">
+                {{ item.formatted_unit_price }} × {{ item.quantity }}
+              </span>
+            </div>
+            <div style="text-align:right;">
+              <strong style="font-size:1rem;color:var(--text-primary);">{{ item.formatted_line_total }}</strong>
+              {% if order.status == 'delivered' %}
+              <br>
+              <a href="{{ url_for('reviews.add_review', product_id=item.product_id) }}"
+                 style="font-size:0.75rem;color:var(--primary);">
+                <i class="bi bi-star"></i> Review
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
         </div>
-
-        <div class="table-responsive">
-          <table class="table mb-0"
-                 style="color:var(--text-primary);border-color:var(--border);">
-            <thead>
-              <tr style="background:var(--bg-card-2);border-bottom:1px solid var(--border);">
-                <th style="padding:0.75rem 1.2rem;font-size:0.73rem;font-weight:700;
-                           text-transform:uppercase;letter-spacing:1px;
-                           color:var(--text-secondary);border:none;">Product</th>
-                <th style="padding:0.75rem 0.8rem;font-size:0.73rem;font-weight:700;
-                           text-transform:uppercase;letter-spacing:1px;
-                           color:var(--text-secondary);border:none;text-align:center;">Qty</th>
-                <th style="padding:0.75rem 0.8rem;font-size:0.73rem;font-weight:700;
-                           text-transform:uppercase;letter-spacing:1px;
-                           color:var(--text-secondary);border:none;text-align:center;">Unit Price</th>
-                <th style="padding:0.75rem 0.8rem;font-size:0.73rem;font-weight:700;
-                           text-transform:uppercase;letter-spacing:1px;
-                           color:var(--text-secondary);border:none;text-align:right;">Line Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for item in order.order_items %}
-              <tr style="border-bottom:1px solid var(--border);">
-                <td style="padding:0.9rem 1.2rem;vertical-align:middle;border:none;">
-                  <div style="display:flex;align-items:center;gap:0.8rem;">
-                    {% if item.product.image %}
-                      <img src="{{ item.product.image }}" alt="{{ item.product.name }}"
-                           style="width:52px;height:52px;object-fit:cover;border-radius:8px;
-                                  border:1px solid var(--border);flex-shrink:0;" />
-                    {% else %}
-                      <div style="width:52px;height:52px;border-radius:8px;
-                                  background:var(--bg-card-2);border:1px solid var(--border);
-                                  display:flex;align-items:center;justify-content:center;
-                                  font-size:1.4rem;flex-shrink:0;">🏅</div>
-                    {% endif %}
-                    <div>
-                      {% if item.product.category %}
-                        <span style="font-size:0.7rem;font-weight:700;color:var(--primary);
-                                     text-transform:uppercase;letter-spacing:0.8px;display:block;">
-                          {{ item.product.category }}
-                        </span>
-                      {% endif %}
-                      <a href="{{ url_for('products.product_detail', product_id=item.product.id) }}"
-                         style="font-weight:600;font-size:0.9rem;color:var(--text-primary);
-                                text-decoration:none;"
-                         onmouseover="this.style.color='var(--primary)'"
-                         onmouseout="this.style.color='var(--text-primary)'">
-                        {{ item.product.name }}
-                      </a>
-                    </div>
-                  </div>
-                </td>
-                <td style="padding:0.9rem 0.8rem;vertical-align:middle;border:none;
-                           text-align:center;font-weight:700;">
-                  {{ item.quantity }}
-                </td>
-                <td style="padding:0.9rem 0.8rem;vertical-align:middle;border:none;
-                           text-align:center;color:var(--text-secondary);font-size:0.88rem;">
-                  {{ item.formatted_unit_price }}
-                  <span style="display:block;font-size:0.72rem;color:var(--text-muted);">at time of order</span>
-                </td>
-                <td style="padding:0.9rem 0.8rem;vertical-align:middle;border:none;
-                           text-align:right;font-family:'Outfit',sans-serif;font-weight:700;">
-                  {{ item.formatted_line_total }}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-            <tfoot>
-              <tr style="background:var(--bg-card-2);border-top:2px solid var(--border);">
-                <td colspan="3"
-                    style="padding:1rem 1.2rem;border:none;font-weight:700;">
-                  Grand Total
-                </td>
-                <td style="padding:1rem 0.8rem;border:none;text-align:right;
-                           font-family:'Outfit',sans-serif;font-size:1.3rem;font-weight:800;
-                           background:var(--gradient-accent);-webkit-background-clip:text;
-                           -webkit-text-fill-color:transparent;background-clip:text;">
-                  {{ order.formatted_total }}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
       </div>
+
+      <!-- Status History -->
+      {% if history %}
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;">
+          <i class="bi bi-clock-history" style="color:var(--primary);"></i> Status History
+        </h5>
+        <div class="history-timeline">
+          {% for h in history %}
+          <div class="history-item">
+            <div style="display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap;">
+              <strong style="font-size:0.9rem;">{{ h.status_label }}</strong>
+              <span style="font-size:0.78rem;color:var(--text-muted);">
+                {{ h.changed_at.strftime('%d %b %Y, %I:%M %p') }}
+              </span>
+            </div>
+            {% if h.note %}
+            <p style="font-size:0.82rem;color:var(--text-secondary);margin:0.2rem 0 0 0;">
+              {{ h.note }}
+            </p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
     </div>
 
-    <!-- ══ RIGHT: Info Panel ══════════════════════════════ -->
+    <!-- ══ RIGHT: Summary + Shipping ══════════════════════ -->
     <div class="col-lg-4">
 
-      <!-- Delivery Info -->
-      <div class="dashboard-card" style="margin-bottom:1rem;">
-        <h6 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
-          <i class="bi bi-geo-alt-fill" style="color:var(--accent);"></i> Delivery Address
-        </h6>
-        <p style="font-weight:600;margin-bottom:0.2rem;">{{ order.shipping_name }}</p>
-        <p style="color:var(--text-secondary);font-size:0.88rem;margin-bottom:0.2rem;">
-          {{ order.shipping_address }}
-        </p>
-        <p style="color:var(--text-secondary);font-size:0.88rem;margin-bottom:0.2rem;">
-          {{ order.shipping_city }}
-        </p>
-        <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">
+      <!-- Order Summary -->
+      <div class="dashboard-card" style="margin-bottom:1.5rem;">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;">
+          <i class="bi bi-receipt" style="color:var(--primary);"></i> Order Summary
+        </h5>
+
+        {% set subtotal = order.order_items | sum(attribute='line_total') %}
+
+        <div style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:0.5rem;">
+          <span style="color:var(--text-secondary);">Subtotal</span>
+          <span>₹{{ "%.2f"|format(subtotal) }}</span>
+        </div>
+        {% if order.discount_amount and order.discount_amount > 0 %}
+        <div style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:0.5rem;">
+          <span style="color:var(--success);">Discount{% if order.coupon_code %} ({{ order.coupon_code }}){% endif %}</span>
+          <span style="color:var(--success);">-₹{{ "%.2f"|format(order.discount_amount) }}</span>
+        </div>
+        {% endif %}
+        {% if order.gst_amount and order.gst_amount > 0 %}
+        <div style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:0.5rem;">
+          <span style="color:var(--text-secondary);">GST (18%)</span>
+          <span>₹{{ "%.2f"|format(order.gst_amount) }}</span>
+        </div>
+        {% endif %}
+        <div style="display:flex;justify-content:space-between;padding-top:0.8rem;
+                    border-top:1px solid var(--border);">
+          <span style="font-family:'Outfit',sans-serif;font-weight:700;">Total</span>
+          <span style="font-family:'Outfit',sans-serif;font-size:1.2rem;font-weight:800;
+                       background:var(--gradient-accent);-webkit-background-clip:text;
+                       -webkit-text-fill-color:transparent;background-clip:text;">
+            {{ order.formatted_total }}
+          </span>
+        </div>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">Invoice No: {{ order.invoice_number }}</p>
+        </div>
+      </div>
+
+      <!-- Shipping Details -->
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;">
+          <i class="bi bi-geo-alt-fill" style="color:var(--accent);"></i> Shipping Details
+        </h5>
+        <p style="font-size:0.9rem;margin:0 0 0.3rem 0;font-weight:600;">{{ order.shipping_name }}</p>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 0.3rem 0;">{{ order.shipping_address }}</p>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 0.3rem 0;">{{ order.shipping_city }}</p>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;">
           <i class="bi bi-telephone"></i> {{ order.shipping_phone }}
         </p>
       </div>
 
-      <!-- Payment -->
-      <div class="dashboard-card" style="margin-bottom:1rem;">
-        <h6 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
-          <i class="bi bi-credit-card" style="color:var(--primary);"></i> Payment
-        </h6>
-        <div style="display:flex;align-items:center;gap:0.6rem;">
-          <i class="bi bi-cash-coin" style="font-size:1.4rem;color:var(--success);"></i>
-          <div>
-            <p style="margin:0;font-weight:600;font-size:0.9rem;">Cash on Delivery</p>
-            <p style="margin:0;color:var(--text-secondary);font-size:0.8rem;">Pay at delivery</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Order Summary -->
-      <div class="dashboard-card">
-        <h6 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
-          <i class="bi bi-receipt" style="color:var(--primary);"></i> Summary
-        </h6>
-        <div style="display:flex;flex-direction:column;gap:0.5rem;">
-          <div style="display:flex;justify-content:space-between;font-size:0.87rem;">
-            <span style="color:var(--text-secondary);">Order ID</span>
-            <span style="font-weight:600;color:var(--primary);">#{{ '%05d'|format(order.id) }}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:0.87rem;">
-            <span style="color:var(--text-secondary);">Placed on</span>
-            <span style="font-weight:600;">{{ order.created_at.strftime('%d %b %Y') }}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:0.87rem;">
-            <span style="color:var(--text-secondary);">Items</span>
-            <span style="font-weight:600;">{{ order.order_items|length }}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;
-                      padding-top:0.6rem;border-top:1px solid var(--border);">
-            <span style="font-weight:700;">Total</span>
-            <span style="font-family:'Outfit',sans-serif;font-weight:800;
-                         background:var(--gradient-accent);-webkit-background-clip:text;
-                         -webkit-text-fill-color:transparent;background-clip:text;">
-              {{ order.formatted_total }}
-            </span>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
-  <!-- Back -->
+  <!-- Navigation -->
   <div style="margin-top:2rem;">
-    <a href="{{ url_for('orders.order_history') }}"
-       class="btn-outline-custom" id="back-to-orders-btn">
-      <i class="bi bi-arrow-left"></i> Back to My Orders
+    <a href="{{ url_for('orders.order_history') }}" class="btn-outline-custom" style="text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> Back to Orders
     </a>
   </div>
 

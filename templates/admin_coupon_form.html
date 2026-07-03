@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-tags" style="color:var(--primary);"></i>
+        <span class="text-gradient">{{ 'Edit' if coupon else 'Add' }} Coupon</span>
+      </h1>
+      <p class="page-subtitle">{{ 'Update the coupon details below.' if coupon else 'Create a new discount coupon for your customers.' }}</p>
+    </div>
+    <a href="{{ url_for('coupon.admin_list') }}" class="btn-outline-custom" style="text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> Back to Coupons
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="dashboard-card">
+
+        <form method="POST" action="{{ url_for('coupon.admin_edit', coupon_id=coupon.id) if coupon else url_for('coupon.admin_add') }}">
+
+          <!-- Code -->
+          <div class="form-group">
+            <label class="form-label" for="code">
+              <i class="bi bi-upc-scan"></i> Coupon Code <span style="color:#ef4444;">*</span>
+            </label>
+            <input type="text" id="code" name="code" class="form-control-custom"
+                   value="{{ coupon.code if coupon else '' }}"
+                   placeholder="e.g. SUMMER20" required
+                   style="text-transform:uppercase;font-family:'Outfit',monospace,sans-serif;font-weight:700;letter-spacing:2px;" />
+            <small style="color:var(--text-muted);font-size:0.75rem;">Will be automatically uppercased.</small>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label" for="description">
+              <i class="bi bi-card-text"></i> Description
+            </label>
+            <input type="text" id="description" name="description" class="form-control-custom"
+                   value="{{ coupon.description if coupon else '' }}"
+                   placeholder="e.g. Summer Sale – 20% off all orders" />
+          </div>
+
+          <!-- Type + Discount Value (side by side) -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="coupon_type">
+                  <i class="bi bi-percent"></i> Coupon Type <span style="color:#ef4444;">*</span>
+                </label>
+                <select id="coupon_type" name="coupon_type" class="form-control-custom" onchange="toggleMaxDiscount(this.value)">
+                  {% for t in coupon_types %}
+                  <option value="{{ t }}" {% if coupon and coupon.coupon_type == t %}selected{% endif %}>
+                    {{ 'Percentage (%)' if t == 'percentage' else 'Fixed Amount (₹)' }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="discount_value">
+                  <i class="bi bi-currency-rupee"></i> Discount Value <span style="color:#ef4444;">*</span>
+                </label>
+                <input type="number" id="discount_value" name="discount_value" class="form-control-custom"
+                       value="{{ coupon.discount_value if coupon else '' }}"
+                       placeholder="e.g. 20" min="0" step="0.01" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Minimum Purchase + Max Discount -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="minimum_purchase">
+                  <i class="bi bi-cart-check"></i> Minimum Purchase (₹)
+                </label>
+                <input type="number" id="minimum_purchase" name="minimum_purchase" class="form-control-custom"
+                       value="{{ coupon.minimum_purchase if coupon else '0' }}"
+                       placeholder="0 = no minimum" min="0" step="0.01" />
+              </div>
+            </div>
+            <div class="col-md-6" id="max-discount-group" {% if coupon and coupon.coupon_type == 'fixed' %}style="display:none;"{% endif %}>
+              <div class="form-group">
+                <label class="form-label" for="max_discount">
+                  <i class="bi bi-shield-check"></i> Max Discount (₹)
+                </label>
+                <input type="number" id="max_discount" name="max_discount" class="form-control-custom"
+                       value="{{ coupon.max_discount if coupon and coupon.max_discount else '' }}"
+                       placeholder="Leave blank = no cap" min="0" step="0.01" />
+                <small style="color:var(--text-muted);font-size:0.75rem;">Cap for percentage coupons.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Usage Limit + Expiry -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="usage_limit">
+                  <i class="bi bi-person-check"></i> Usage Limit
+                </label>
+                <input type="number" id="usage_limit" name="usage_limit" class="form-control-custom"
+                       value="{{ coupon.usage_limit if coupon and coupon.usage_limit else '' }}"
+                       placeholder="Leave blank = unlimited" min="1" step="1" />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="expires_at">
+                  <i class="bi bi-calendar-x"></i> Expiry Date
+                </label>
+                <input type="datetime-local" id="expires_at" name="expires_at" class="form-control-custom"
+                       value="{{ coupon.expires_at.strftime('%Y-%m-%dT%H:%M') if coupon and coupon.expires_at else '' }}" />
+                <small style="color:var(--text-muted);font-size:0.75rem;">Leave blank = never expires.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Toggle -->
+          <div class="form-group" style="display:flex;align-items:center;gap:1rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div class="form-check form-switch" style="margin:0;">
+                <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                       {% if not coupon or coupon.is_active %}checked{% endif %}
+                       style="cursor:pointer;width:3rem;height:1.5rem;">
+                <label class="form-check-label" for="is_active" style="cursor:pointer;color:var(--text-primary);font-weight:600;margin-left:0.5rem;">
+                  Active Coupon
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+            <button type="submit" class="btn-submit" style="flex:1;">
+              <i class="bi bi-{% if coupon %}check-lg{% else %}plus-circle{% endif %}"></i>
+              {{ 'Update Coupon' if coupon else 'Create Coupon' }}
+            </button>
+            <a href="{{ url_for('coupon.admin_list') }}" class="btn-outline-custom" style="text-decoration:none;">
+              Cancel
+            </a>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleMaxDiscount(type) {
+  var group = document.getElementById('max-discount-group');
+  if (type === 'percentage') {
+    group.style.display = '';
+  } else {
+    group.style.display = 'none';
+  }
+}
+</script>
+{% endblock %}

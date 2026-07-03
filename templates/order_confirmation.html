@@ -134,11 +134,54 @@
 
   </div>
 
+  <!-- ── Order Price Breakdown ── -->
+  <div class="dashboard-card" style="margin-bottom:1.5rem;">
+    <h6 style="font-weight:700;margin-bottom:1rem;">
+      <i class="bi bi-receipt" style="color:var(--primary);"></i> Price Breakdown
+    </h6>
+    {% set subtotal = order.order_items | sum(attribute='line_total') %}
+    <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.88rem;">
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-secondary);">Subtotal</span>
+        <span>₹{{ "%.2f"|format(subtotal) }}</span>
+      </div>
+      {% if order.discount_amount and order.discount_amount > 0 %}
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--success);">Discount{% if order.coupon_code %} ({{ order.coupon_code }}){% endif %}</span>
+        <span style="color:var(--success);">-₹{{ "%.2f"|format(order.discount_amount) }}</span>
+      </div>
+      {% endif %}
+      {% if order.gst_amount and order.gst_amount > 0 %}
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-secondary);">GST (18%)</span>
+        <span>₹{{ "%.2f"|format(order.gst_amount) }}</span>
+      </div>
+      {% endif %}
+      <div style="display:flex;justify-content:space-between;padding-top:0.5rem;
+                  border-top:1px solid var(--border);font-weight:700;font-size:1rem;">
+        <span>Total Paid</span>
+        <span style="background:var(--gradient-accent);-webkit-background-clip:text;
+                     -webkit-text-fill-color:transparent;background-clip:text;">{{ order.formatted_total }}</span>
+      </div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--text-muted);margin:0.5rem 0 0 0;">
+      Invoice No: {{ order.invoice_number }}
+    </p>
+  </div>
+
   <!-- ── Actions ── -->
   <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
+    <a href="{{ url_for('orders.order_detail', order_id=order.id) }}"
+       class="btn-primary-custom" id="track-order-btn">
+      <i class="bi bi-geo-alt"></i> Track Order
+    </a>
+    <a href="{{ url_for('invoice.download', order_id=order.id) }}"
+       class="btn-outline-custom" id="download-invoice-btn">
+      <i class="bi bi-file-earmark-pdf"></i> Download Invoice
+    </a>
     <a href="{{ url_for('orders.order_history') }}"
-       class="btn-primary-custom" id="view-orders-btn">
-      <i class="bi bi-bag-heart"></i> View All Orders
+       class="btn-outline-custom" id="view-orders-btn">
+      <i class="bi bi-bag-heart"></i> My Orders
     </a>
     <a href="{{ url_for('products.products') }}"
        class="btn-outline-custom" id="continue-shopping-btn">

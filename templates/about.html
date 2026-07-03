@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}About Us – SportsHub{% endblock %}
+
+{% block extra_head %}
+<style>
+.stat-card {
+  text-align: center;
+  padding: 2rem 1.5rem;
+}
+.stat-number {
+  font-family: 'Outfit', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.team-card {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.team-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+.team-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 auto 1rem;
+  box-shadow: 0 8px 24px rgba(92,107,192,0.3);
+}
+.value-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  height: 100%;
+}
+.value-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero Section ── -->
+<section style="background:linear-gradient(135deg,rgba(92,107,192,0.1),rgba(139,92,246,0.07),rgba(16,185,129,0.05));
+                border-bottom:1px solid var(--border);padding:5rem 0 4rem;overflow:hidden;position:relative;">
+  <div style="position:absolute;top:-50px;right:-100px;width:400px;height:400px;
+              border-radius:50%;background:rgba(92,107,192,0.05);pointer-events:none;"></div>
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span style="background:rgba(92,107,192,0.12);color:var(--primary);
+                     padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:700;
+                     text-transform:uppercase;letter-spacing:1px;">Our Story</span>
+        <h1 style="font-family:'Outfit',sans-serif;font-size:3rem;font-weight:900;
+                   margin:1rem 0 1.2rem;line-height:1.1;">
+          Empowering Athletes,<br>
+          <span class="text-gradient">One Sport at a Time</span>
+        </h1>
+        <p style="color:var(--text-secondary);font-size:1.05rem;line-height:1.8;margin-bottom:1.5rem;">
+          SportsHub was born from a simple belief — every athlete deserves access to premium sports gear without the premium price tag. We're building the most trusted sports e-commerce platform in India.
+        </p>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <a href="{{ url_for('products.products') }}" class="btn-primary-custom" style="text-decoration:none;">
+            <i class="bi bi-shop"></i> Shop Now
+          </a>
+          <a href="{{ url_for('contact.contact') }}" class="btn-outline-custom" style="text-decoration:none;">
+            <i class="bi bi-envelope"></i> Contact Us
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="dashboard-card stat-card">
+            <div class="stat-number">5K+</div>
+            <p style="color:var(--text-secondary);margin:0;font-size:0.88rem;font-weight:600;">Happy Athletes</p>
+          </div>
+          <div class="dashboard-card stat-card">
+            <div class="stat-number">500+</div>
+            <p style="color:var(--text-secondary);margin:0;font-size:0.88rem;font-weight:600;">Premium Products</p>
+          </div>
+          <div class="dashboard-card stat-card">
+            <div class="stat-number">50+</div>
+            <p style="color:var(--text-secondary);margin:0;font-size:0.88rem;font-weight:600;">Sports Brands</p>
+          </div>
+          <div class="dashboard-card stat-card">
+            <div class="stat-number">4.8★</div>
+            <p style="color:var(--text-secondary);margin:0;font-size:0.88rem;font-weight:600;">Customer Rating</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="dashboard-wrapper">
+
+  <!-- ── Mission & Vision ── -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-6">
+      <div class="dashboard-card" style="height:100%;border-left:3px solid var(--primary);">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+          <div style="width:52px;height:52px;border-radius:12px;background:rgba(92,107,192,0.12);
+                      display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--primary);">
+            <i class="bi bi-bullseye"></i>
+          </div>
+          <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;">Our Mission</h3>
+        </div>
+        <p style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;margin:0;">
+          To democratize access to world-class sports equipment and apparel for every athlete in India — from the professional stadium to the neighbourhood park. We believe sport has the power to transform lives, and we're here to fuel that journey.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="dashboard-card" style="height:100%;border-left:3px solid var(--accent);">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+          <div style="width:52px;height:52px;border-radius:12px;background:rgba(245,158,11,0.12);
+                      display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#f59e0b;">
+            <i class="bi bi-eye"></i>
+          </div>
+          <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;">Our Vision</h3>
+        </div>
+        <p style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;margin:0;">
+          To become India's most trusted sports retail destination — a place where quality, affordability, and passion intersect. We envision a future where every Indian athlete has the tools they need to reach their peak performance.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Company Story ── -->
+  <div class="row align-items-center g-5 mb-5">
+    <div class="col-lg-6">
+      <div style="background:linear-gradient(135deg,var(--primary),var(--accent));
+                  border-radius:20px;padding:3rem;position:relative;overflow:hidden;">
+        <div style="position:absolute;bottom:-30px;right:-30px;width:150px;height:150px;
+                    border-radius:50%;background:rgba(255,255,255,0.07);"></div>
+        <div style="position:absolute;top:-20px;left:-20px;width:100px;height:100px;
+                    border-radius:50%;background:rgba(255,255,255,0.05);"></div>
+        <i class="bi bi-lightning-charge-fill" style="font-size:4rem;color:rgba(255,255,255,0.8);display:block;margin-bottom:1rem;"></i>
+        <h2 style="font-family:'Outfit',sans-serif;font-weight:900;color:white;font-size:2rem;margin-bottom:0.75rem;">
+          Founded in 2026
+        </h2>
+        <p style="color:rgba(255,255,255,0.85);line-height:1.8;margin:0;font-size:0.95rem;">
+          Starting from a small room in Chh. Sambhajinagar, SportsHub has grown into a pan-India platform trusted by thousands of athletes.
+        </p>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <span style="background:rgba(92,107,192,0.12);color:var(--primary);
+                   padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:700;
+                   text-transform:uppercase;letter-spacing:1px;">Our Story</span>
+      <h2 style="font-family:'Outfit',sans-serif;font-size:2rem;font-weight:800;margin:1rem 0 1rem;">
+        From Passion to Platform
+      </h2>
+      <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:1rem;font-size:0.95rem;">
+        SportsHub began as a weekend project by a group of passionate athletes frustrated by the poor selection and inflated prices of sports gear in India. We set out to build something better.
+      </p>
+      <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:1rem;font-size:0.95rem;">
+        Within our first year, we partnered with 20+ top brands, curated a catalogue of 500+ products, and delivered to every major city in India. Our customer-first approach earned us a 4.8-star rating from over 5,000 happy athletes.
+      </p>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">
+        Today, we continue to grow — investing in better technology, faster delivery, and an ever-expanding catalogue — because we believe your game deserves the best gear.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Core Values ── -->
+  <div style="margin-bottom:4rem;">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+      <h2 style="font-family:'Outfit',sans-serif;font-weight:800;font-size:2rem;">
+        What Drives <span class="text-gradient">Us</span>
+      </h2>
+      <p style="color:var(--text-secondary);">Our core values shape everything we do.</p>
+    </div>
+    <div class="row g-4">
+      {% set values = [
+        ('bi-trophy-fill','rgba(245,158,11,0.12)','#f59e0b','Quality First','We never compromise on quality. Every product in our catalogue is carefully selected and vetted by our expert team.'),
+        ('bi-heart-fill','rgba(239,68,68,0.12)','#ef4444','Customer Love','Your satisfaction is our priority. We go above and beyond to ensure every interaction with SportsHub is exceptional.'),
+        ('bi-lightning-charge-fill','rgba(92,107,192,0.12)','var(--primary)','Innovation','We constantly improve our platform, logistics, and product selection to give you a better experience every day.'),
+        ('bi-shield-check-fill','rgba(16,185,129,0.12)','var(--success)','Authenticity','100% genuine products from authorised distributors. We stand behind every item we sell with full warranty support.'),
+      ] %}
+      {% for icon, bg, color, title, text in values %}
+      <div class="col-md-6 col-lg-3">
+        <div class="dashboard-card value-card">
+          <div class="value-icon" style="background:{{ bg }};color:{{ color }};">
+            <i class="bi {{ icon }}"></i>
+          </div>
+          <div>
+            <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;">{{ title }}</h5>
+            <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;line-height:1.6;">{{ text }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── CTA ── -->
+  <div style="background:linear-gradient(135deg,rgba(92,107,192,0.12),rgba(139,92,246,0.08));
+              border:1px solid rgba(92,107,192,0.2);border-radius:20px;
+              padding:3rem 2rem;text-align:center;margin-bottom:2rem;">
+    <i class="bi bi-bag-heart-fill" style="font-size:3rem;background:var(--gradient-primary);
+       -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+       display:block;margin-bottom:1rem;"></i>
+    <h2 style="font-family:'Outfit',sans-serif;font-weight:800;font-size:2rem;margin-bottom:0.75rem;">
+      Ready to Level Up Your Game?
+    </h2>
+    <p style="color:var(--text-secondary);max-width:450px;margin:0 auto 1.5rem;font-size:0.95rem;">
+      Join 5,000+ athletes who trust SportsHub for their gear. Get free delivery on orders above ₹999.
+    </p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="{{ url_for('products.products') }}" class="btn-primary-custom" style="text-decoration:none;">
+        <i class="bi bi-shop"></i> Start Shopping
+      </a>
+      {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('auth.register') }}" class="btn-outline-custom" style="text-decoration:none;">
+        <i class="bi bi-person-plus"></i> Create Account
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

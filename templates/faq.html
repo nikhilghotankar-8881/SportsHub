@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}FAQ – SportsHub{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ── -->
+<section style="background:linear-gradient(135deg,rgba(92,107,192,0.08),rgba(139,92,246,0.05));
+                border-bottom:1px solid var(--border);padding:4rem 0 3rem;">
+  <div class="container text-center">
+    <div style="display:inline-flex;width:72px;height:72px;border-radius:50%;
+                background:linear-gradient(135deg,var(--primary),var(--accent));
+                align-items:center;justify-content:center;font-size:2rem;
+                color:white;margin-bottom:1.5rem;box-shadow:0 8px 24px rgba(92,107,192,0.3);">
+      <i class="bi bi-question-circle-fill"></i>
+    </div>
+    <h1 style="font-family:'Outfit',sans-serif;font-size:2.5rem;font-weight:800;margin-bottom:0.75rem;">
+      Frequently Asked <span class="text-gradient">Questions</span>
+    </h1>
+    <p style="color:var(--text-secondary);font-size:1.05rem;max-width:500px;margin:0 auto;">
+      Find answers to the most common questions about SportsHub — from orders and shipping to returns and payments.
+    </p>
+  </div>
+</section>
+
+<div class="dashboard-wrapper">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <!-- ── Orders & Shipping ── -->
+      <div style="margin-bottom:2.5rem;">
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;
+                   display:flex;align-items:center;gap:0.75rem;">
+          <span style="width:36px;height:36px;border-radius:50%;background:rgba(92,107,192,0.12);
+                       color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1rem;">
+            <i class="bi bi-truck"></i>
+          </span>
+          Orders & Shipping
+        </h4>
+
+        <div class="accordion" id="faq-orders">
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q1" aria-expanded="true"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:var(--primary);"></i>
+                How long does delivery take?
+              </button>
+            </h2>
+            <div id="q1" class="accordion-collapse collapse show" data-bs-parent="#faq-orders">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                Standard delivery typically takes <strong>3–7 business days</strong>. Express delivery (where available) takes 1–2 business days. You'll receive tracking updates via email once your order ships.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q2"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:var(--primary);"></i>
+                Is there free shipping?
+              </button>
+            </h2>
+            <div id="q2" class="accordion-collapse collapse" data-bs-parent="#faq-orders">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                Yes! We offer <strong>free delivery on all orders above ₹999</strong>. For orders below this amount, a flat delivery charge of ₹49 applies.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q3"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:var(--primary);"></i>
+                Can I track my order?
+              </button>
+            </h2>
+            <div id="q3" class="accordion-collapse collapse" data-bs-parent="#faq-orders">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                Absolutely! Log in to your account, go to <strong>My Orders</strong>, and click on any order to see its real-time tracking status — from Placed → Confirmed → Packed → Shipped → Out for Delivery → Delivered.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q4"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:var(--primary);"></i>
+                Can I cancel my order?
+              </button>
+            </h2>
+            <div id="q4" class="accordion-collapse collapse" data-bs-parent="#faq-orders">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                You can cancel an order if it is still in <strong>Placed</strong> or <strong>Confirmed</strong> status. Once packed or shipped, cancellations are not possible. Go to My Orders → Order Detail → Cancel Order.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Payments & Coupons ── -->
+      <div style="margin-bottom:2.5rem;">
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;
+                   display:flex;align-items:center;gap:0.75rem;">
+          <span style="width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,0.12);
+                       color:var(--success);display:flex;align-items:center;justify-content:center;font-size:1rem;">
+            <i class="bi bi-credit-card"></i>
+          </span>
+          Payments & Coupons
+        </h4>
+
+        <div class="accordion" id="faq-payments">
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q5"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:var(--success);"></i>
+                What payment methods do you accept?
+              </button>
+            </h2>
+            <div id="q5" class="accordion-collapse collapse" data-bs-parent="#faq-payments">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                We currently offer <strong>Cash on Delivery (COD)</strong> — pay when your order arrives at your doorstep. No advance payment or card details required. Online payment options are coming soon.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q6"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:var(--success);"></i>
+                How do I apply a coupon code?
+              </button>
+            </h2>
+            <div id="q6" class="accordion-collapse collapse" data-bs-parent="#faq-payments">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                On the <strong>Checkout</strong> page, you'll find a coupon section on the right side. Enter your coupon code and click <em>Apply</em>. The discount will be reflected immediately in your order total before you confirm.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q7"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:var(--success);"></i>
+                Is GST included in the price?
+              </button>
+            </h2>
+            <div id="q7" class="accordion-collapse collapse" data-bs-parent="#faq-payments">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                GST (18%) is calculated and displayed at checkout, after any discounts are applied. Your invoice includes a detailed GST breakup for record keeping.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Account & Returns ── -->
+      <div style="margin-bottom:2.5rem;">
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;
+                   display:flex;align-items:center;gap:0.75rem;">
+          <span style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,0.12);
+                       color:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:1rem;">
+            <i class="bi bi-person-circle"></i>
+          </span>
+          Account & Returns
+        </h4>
+
+        <div class="accordion" id="faq-account">
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q8"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:#f59e0b;"></i>
+                Do I need an account to shop?
+              </button>
+            </h2>
+            <div id="q8" class="accordion-collapse collapse" data-bs-parent="#faq-account">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                You need a free account to place orders, track shipments, and use the wishlist. Registration is quick — just your name, email, and a password.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q9"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:#f59e0b;"></i>
+                What is your return policy?
+              </button>
+            </h2>
+            <div id="q9" class="accordion-collapse collapse" data-bs-parent="#faq-account">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                We accept returns within <strong>7 days of delivery</strong> for unused, original-condition items. Contact us at support@sportshub.com to initiate a return. Refunds are processed within 5–7 business days.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#q10"
+                      style="background:var(--bg-card);color:var(--text-primary);font-weight:600;box-shadow:none;font-size:0.95rem;">
+                <i class="bi bi-question-circle me-2" style="color:#f59e0b;"></i>
+                Can I download my invoice?
+              </button>
+            </h2>
+            <div id="q10" class="accordion-collapse collapse" data-bs-parent="#faq-account">
+              <div class="accordion-body" style="color:var(--text-secondary);font-size:0.9rem;">
+                Yes! Go to <strong>My Orders</strong> → Click on your order → Click <em>Download Invoice</em>. A PDF invoice with your order details, GST breakup, and company information will be generated instantly.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div style="background:linear-gradient(135deg,rgba(92,107,192,0.1),rgba(139,92,246,0.07));
+                  border:1px solid rgba(92,107,192,0.2);border-radius:var(--radius);
+                  padding:2rem;text-align:center;">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;">
+          Still have questions?
+        </h5>
+        <p style="color:var(--text-secondary);margin-bottom:1.2rem;font-size:0.9rem;">
+          Our support team is here to help you. Reach out anytime.
+        </p>
+        <a href="{{ url_for('contact.contact') }}" class="btn-primary-custom" style="text-decoration:none;">
+          <i class="bi bi-send"></i> Contact Support
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

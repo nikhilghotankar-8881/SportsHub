@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Manage Coupons – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-tags" style="color:var(--primary);"></i>
+        Coupon <span class="text-gradient">Management</span>
+      </h1>
+      <p class="page-subtitle">Create and manage discount coupons for your customers.</p>
+    </div>
+    <a href="{{ url_for('coupon.admin_add') }}" class="btn-primary-custom" style="text-decoration:none;">
+      <i class="bi bi-plus-circle"></i> Add Coupon
+    </a>
+  </div>
+
+  {% if coupons %}
+  <div class="dashboard-card">
+    <div class="table-responsive">
+      <table class="table" style="color:var(--text-primary);margin:0;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Code</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Type</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Discount</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Min Purchase</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Usage</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Expires</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Status</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for coupon in coupons %}
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:12px 8px;">
+              <span style="background:rgba(92,107,192,0.12);color:var(--primary);
+                           padding:4px 10px;border-radius:20px;font-size:0.82rem;font-weight:700;
+                           font-family:'Outfit',monospace,sans-serif;">
+                {{ coupon.code }}
+              </span>
+            </td>
+            <td style="padding:12px 8px;font-size:0.85rem;">{{ coupon.type_label }}</td>
+            <td style="padding:12px 8px;font-weight:700;color:var(--success);">{{ coupon.discount_display }}</td>
+            <td style="padding:12px 8px;font-size:0.85rem;">₹{{ coupon.minimum_purchase }}</td>
+            <td style="padding:12px 8px;font-size:0.85rem;">
+              {{ coupon.used_count }}{% if coupon.usage_limit %} / {{ coupon.usage_limit }}{% else %} / ∞{% endif %}
+            </td>
+            <td style="padding:12px 8px;font-size:0.82rem;color:var(--text-secondary);">
+              {% if coupon.expires_at %}
+                {% if coupon.is_expired %}
+                  <span style="color:#ef4444;">{{ coupon.expires_at.strftime('%d %b %Y') }} (Expired)</span>
+                {% else %}
+                  {{ coupon.expires_at.strftime('%d %b %Y') }}
+                {% endif %}
+              {% else %}
+                <span style="color:var(--success);">No expiry</span>
+              {% endif %}
+            </td>
+            <td style="padding:12px 8px;">
+              {% if coupon.is_active and not coupon.is_expired %}
+                <span class="badge bg-success" style="font-size:0.75rem;">Active</span>
+              {% elif coupon.is_expired %}
+                <span class="badge bg-secondary" style="font-size:0.75rem;">Expired</span>
+              {% else %}
+                <span class="badge bg-danger" style="font-size:0.75rem;">Inactive</span>
+              {% endif %}
+            </td>
+            <td style="padding:12px 8px;">
+              <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                <a href="{{ url_for('coupon.admin_edit', coupon_id=coupon.id) }}"
+                   class="btn-outline-custom" style="font-size:0.75rem;padding:4px 10px;text-decoration:none;">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form action="{{ url_for('coupon.admin_toggle', coupon_id=coupon.id) }}" method="POST" style="display:inline;">
+                  <button type="submit" class="btn-outline-custom"
+                          style="font-size:0.75rem;padding:4px 10px;cursor:pointer;">
+                    <i class="bi bi-{% if coupon.is_active %}pause{% else %}play{% endif %}"></i>
+                  </button>
+                </form>
+                <form action="{{ url_for('coupon.admin_delete', coupon_id=coupon.id) }}" method="POST"
+                      onsubmit="return confirm('Delete coupon {{ coupon.code }}?');" style="display:inline;">
+                  <button type="submit" class="btn-outline-custom"
+                          style="font-size:0.75rem;padding:4px 10px;border-color:#ef4444;color:#ef4444;cursor:pointer;">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="dashboard-card" style="text-align:center;padding:3rem;">
+    <i class="bi bi-tags" style="font-size:3rem;color:var(--text-muted);"></i>
+    <h5 style="color:var(--text-secondary);margin-top:1rem;">No coupons yet</h5>
+    <p style="color:var(--text-muted);font-size:0.85rem;">Create your first coupon to offer discounts to customers.</p>
+    <a href="{{ url_for('coupon.admin_add') }}" class="btn-primary-custom" style="text-decoration:none;display:inline-flex;">
+      <i class="bi bi-plus-circle"></i> Create Coupon
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

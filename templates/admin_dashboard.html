@@ -1,60 +1,101 @@
 {% extends "base.html" %}
 {% block title %}Admin Dashboard – SportsHub{% endblock %}
 
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-wrapper">
 
   <!-- Header -->
-  <div class="page-header" style="display:flex;align-items:center;
-       justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
     <div>
       <h1 class="page-title">
         <i class="bi bi-shield-lock" style="color:var(--primary);"></i>
         Admin <span class="text-gradient">Dashboard</span>
       </h1>
-      <p class="page-subtitle">Overview of your store's performance.</p>
+      <p class="page-subtitle">Real-time overview of your store's performance.</p>
+    </div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+      <a href="{{ url_for('admin.inventory') }}" class="btn-outline-custom" style="text-decoration:none;">
+        <i class="bi bi-boxes"></i> Inventory
+      </a>
+      <a href="{{ url_for('coupon.admin_list') }}" class="btn-outline-custom" style="text-decoration:none;">
+        <i class="bi bi-tags"></i> Coupons
+      </a>
+      <a href="{{ url_for('admin.contacts') }}" class="btn-primary-custom" style="text-decoration:none;position:relative;">
+        <i class="bi bi-chat-dots"></i> Messages
+        {% if unread_contacts > 0 %}
+        <span style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:white;
+                     font-size:0.65rem;font-weight:800;min-width:18px;height:18px;
+                     border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0 3px;">
+          {{ unread_contacts }}
+        </span>
+        {% endif %}
+      </a>
     </div>
   </div>
 
-  <!-- ── Statistics Cards ── -->
+  <!-- ── Row 1: Core Stats ──────────────────────────────── -->
   <div class="row g-4 mb-4">
-    
-    <!-- Total Users -->
-    <div class="col-md-6 col-lg-3">
-      <div class="dashboard-card" style="height:100%;display:flex;flex-direction:column;justify-content:center;">
+
+    <!-- Total Revenue -->
+    <div class="col-6 col-lg-3">
+      <div class="dashboard-card" style="height:100%;">
         <div style="display:flex;align-items:center;gap:1rem;">
-          <div style="width:56px;height:56px;border-radius:12px;
-                      background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);
-                      display:flex;align-items:center;justify-content:center;
-                      font-size:1.8rem;color:#60a5fa;flex-shrink:0;">
-            <i class="bi bi-people-fill"></i>
+          <div style="width:56px;height:56px;border-radius:12px;background:rgba(92,107,192,0.12);
+                      border:1px solid rgba(92,107,192,0.3);display:flex;align-items:center;
+                      justify-content:center;font-size:1.8rem;color:var(--primary);flex-shrink:0;">
+            <i class="bi bi-graph-up-arrow"></i>
           </div>
           <div>
-            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:700;
-                      text-transform:uppercase;letter-spacing:1px;">Total Users</p>
-            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.8rem;">
-              {{ total_users }}
+            <p style="font-size:0.75rem;color:var(--text-secondary);margin:0;font-weight:700;
+                      text-transform:uppercase;letter-spacing:1px;">Total Revenue</p>
+            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.4rem;
+                       background:var(--gradient-accent);-webkit-background-clip:text;
+                       -webkit-text-fill-color:transparent;background-clip:text;">
+              ₹{{ "%.0f"|format(total_revenue) }}
             </h3>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Total Products -->
-    <div class="col-md-6 col-lg-3">
-      <div class="dashboard-card" style="height:100%;display:flex;flex-direction:column;justify-content:center;">
+    <!-- Today's Revenue -->
+    <div class="col-6 col-lg-3">
+      <div class="dashboard-card" style="height:100%;">
         <div style="display:flex;align-items:center;gap:1rem;">
-          <div style="width:56px;height:56px;border-radius:12px;
-                      background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);
-                      display:flex;align-items:center;justify-content:center;
-                      font-size:1.8rem;color:#fbbf24;flex-shrink:0;">
-            <i class="bi bi-box-seam"></i>
+          <div style="width:56px;height:56px;border-radius:12px;background:rgba(16,185,129,0.12);
+                      border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;
+                      justify-content:center;font-size:1.8rem;color:var(--success);flex-shrink:0;">
+            <i class="bi bi-sun"></i>
           </div>
           <div>
-            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:700;
-                      text-transform:uppercase;letter-spacing:1px;">Total Products</p>
-            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.8rem;">
-              {{ total_products }}
+            <p style="font-size:0.75rem;color:var(--text-secondary);margin:0;font-weight:700;
+                      text-transform:uppercase;letter-spacing:1px;">Today</p>
+            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.4rem;">
+              ₹{{ "%.0f"|format(today_revenue) }}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Revenue -->
+    <div class="col-6 col-lg-3">
+      <div class="dashboard-card" style="height:100%;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div style="width:56px;height:56px;border-radius:12px;background:rgba(245,158,11,0.12);
+                      border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;
+                      justify-content:center;font-size:1.8rem;color:#fbbf24;flex-shrink:0;">
+            <i class="bi bi-calendar-month"></i>
+          </div>
+          <div>
+            <p style="font-size:0.75rem;color:var(--text-secondary);margin:0;font-weight:700;
+                      text-transform:uppercase;letter-spacing:1px;">This Month</p>
+            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.4rem;">
+              ₹{{ "%.0f"|format(monthly_revenue) }}
             </h3>
           </div>
         </div>
@@ -62,17 +103,16 @@
     </div>
 
     <!-- Total Orders -->
-    <div class="col-md-6 col-lg-3">
-      <div class="dashboard-card" style="height:100%;display:flex;flex-direction:column;justify-content:center;">
+    <div class="col-6 col-lg-3">
+      <div class="dashboard-card" style="height:100%;">
         <div style="display:flex;align-items:center;gap:1rem;">
-          <div style="width:56px;height:56px;border-radius:12px;
-                      background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);
-                      display:flex;align-items:center;justify-content:center;
-                      font-size:1.8rem;color:var(--success);flex-shrink:0;">
+          <div style="width:56px;height:56px;border-radius:12px;background:rgba(239,68,68,0.12);
+                      border:1px solid rgba(239,68,68,0.3);display:flex;align-items:center;
+                      justify-content:center;font-size:1.8rem;color:#f87171;flex-shrink:0;">
             <i class="bi bi-receipt"></i>
           </div>
           <div>
-            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:700;
+            <p style="font-size:0.75rem;color:var(--text-secondary);margin:0;font-weight:700;
                       text-transform:uppercase;letter-spacing:1px;">Total Orders</p>
             <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.8rem;">
               {{ total_orders }}
@@ -82,24 +122,77 @@
       </div>
     </div>
 
-    <!-- Total Revenue -->
-    <div class="col-md-6 col-lg-3">
-      <div class="dashboard-card" style="height:100%;display:flex;flex-direction:column;justify-content:center;">
-        <div style="display:flex;align-items:center;gap:1rem;">
-          <div style="width:56px;height:56px;border-radius:12px;
-                      background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);
-                      display:flex;align-items:center;justify-content:center;
-                      font-size:1.8rem;color:#f87171;flex-shrink:0;">
-            <i class="bi bi-graph-up-arrow"></i>
+  </div>
+
+  <!-- ── Row 2: More Stats ──────────────────────────────── -->
+  <div class="row g-4 mb-4">
+
+    <div class="col-6 col-md-3">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;"><i class="bi bi-people-fill" style="color:#60a5fa;"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;">{{ total_users }}</h4>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;">Registered Users</p>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;"><i class="bi bi-clock-history" style="color:#fbbf24;"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;">{{ pending_orders }}</h4>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;">Pending Orders</p>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;"><i class="bi bi-bag-check-fill" style="color:var(--success);"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;">{{ delivered_orders }}</h4>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;">Delivered Orders</p>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;"><i class="bi bi-x-circle-fill" style="color:#f87171;"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;">{{ cancelled_orders }}</h4>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;">Cancelled Orders</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Row 3: Charts ─────────────────────────────────── -->
+  <div class="row g-4 mb-4">
+
+    <!-- Revenue Chart -->
+    <div class="col-lg-8">
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
+          <i class="bi bi-bar-chart-line" style="color:var(--primary);"></i> Monthly Revenue (Last 6 Months)
+        </h5>
+        <canvas id="revenueChart" height="120"></canvas>
+      </div>
+    </div>
+
+    <!-- Order Statistics Doughnut -->
+    <div class="col-lg-4">
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
+          <i class="bi bi-pie-chart" style="color:var(--primary);"></i> Order Statistics
+        </h5>
+        <canvas id="orderStatsChart" height="200"></canvas>
+        <div style="margin-top:1rem;font-size:0.8rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+            <span style="width:12px;height:12px;border-radius:50%;background:#27ae60;flex-shrink:0;"></span>
+            Delivered: {{ delivered_orders }}
           </div>
-          <div>
-            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:700;
-                      text-transform:uppercase;letter-spacing:1px;">Total Revenue</p>
-            <h3 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.5rem;
-                       background:var(--gradient-accent);-webkit-background-clip:text;
-                       -webkit-text-fill-color:transparent;background-clip:text;">
-              ₹{{ "%.2f"|format(total_revenue) }}
-            </h3>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+            <span style="width:12px;height:12px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
+            Pending: {{ pending_orders }}
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="width:12px;height:12px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
+            Cancelled: {{ cancelled_orders }}
           </div>
         </div>
       </div>
@@ -107,25 +200,249 @@
 
   </div>
 
-  <div class="dashboard-card">
-    <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
-      <i class="bi bi-info-circle" style="color:var(--primary);"></i> Admin Actions
-    </h5>
-    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;">
-      <a href="{{ url_for('admin.users') }}" class="btn-outline-custom" style="text-decoration:none;">
-        <i class="bi bi-people"></i> Manage Users
-      </a>
-      <a href="{{ url_for('admin.products') }}" class="btn-outline-custom" style="text-decoration:none;">
-        <i class="bi bi-box-seam"></i> Manage Products
-      </a>
-      <a href="{{ url_for('admin.orders') }}" class="btn-primary-custom" style="text-decoration:none;">
-        <i class="bi bi-receipt"></i> Manage Orders
-      </a>
-      <a href="{{ url_for('admin.reviews') }}" class="btn-outline-custom" style="text-decoration:none;">
-        <i class="bi bi-star"></i> Manage Reviews
-      </a>
+  <!-- ── Row 4: Daily Orders Chart ──────────────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
+          <i class="bi bi-graph-up" style="color:var(--primary);"></i> Daily Orders (Last 7 Days)
+        </h5>
+        <canvas id="dailyOrdersChart" height="70"></canvas>
+      </div>
     </div>
   </div>
 
+  <!-- ── Row 5: Best Sellers + Top Customers ────────────── -->
+  <div class="row g-4 mb-4">
+
+    <!-- Best Sellers -->
+    <div class="col-lg-6">
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;">
+          <i class="bi bi-trophy-fill" style="color:#fbbf24;"></i> Best Sellers
+        </h5>
+        {% if best_sellers %}
+        <div style="display:flex;flex-direction:column;gap:0.8rem;">
+          {% for product, total_sold in best_sellers %}
+          <div style="display:flex;align-items:center;gap:0.8rem;">
+            <span style="width:28px;height:28px;border-radius:50%;background:rgba(92,107,192,0.15);
+                         color:var(--primary);font-size:0.75rem;font-weight:800;
+                         display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              {{ loop.index }}
+            </span>
+            <div style="flex:1;min-width:0;">
+              <p style="font-weight:600;font-size:0.88rem;margin:0;overflow:hidden;
+                        text-overflow:ellipsis;white-space:nowrap;">{{ product.name }}</p>
+              <div style="background:var(--bg-card-2);border-radius:4px;height:4px;margin-top:4px;">
+                <div style="background:var(--gradient-primary);border-radius:4px;height:4px;
+                            width:{{ [100, (total_sold / best_sellers[0][1] * 100) | int] | min }}%;"></div>
+              </div>
+            </div>
+            <span style="font-weight:700;font-size:0.85rem;color:var(--primary);white-space:nowrap;">
+              {{ total_sold }} sold
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--text-secondary);font-size:0.85rem;">No sales data yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Top Customers -->
+    <div class="col-lg-6">
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1.2rem;">
+          <i class="bi bi-people-fill" style="color:#60a5fa;"></i> Top Customers
+        </h5>
+        {% if top_customers %}
+        <div style="display:flex;flex-direction:column;gap:0.8rem;">
+          {% for user, order_count, total_spent in top_customers %}
+          <div style="display:flex;align-items:center;gap:0.8rem;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(92,107,192,0.15);
+                        color:var(--primary);font-weight:800;display:flex;align-items:center;
+                        justify-content:center;font-size:0.9rem;flex-shrink:0;">
+              {{ user.name[0].upper() }}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <p style="font-weight:600;font-size:0.88rem;margin:0;overflow:hidden;
+                        text-overflow:ellipsis;white-space:nowrap;">{{ user.name }}</p>
+              <span style="font-size:0.78rem;color:var(--text-secondary);">{{ order_count }} orders</span>
+            </div>
+            <span style="font-weight:700;font-size:0.85rem;color:var(--success);">
+              ₹{{ "%.0f"|format(total_spent) }}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--text-secondary);font-size:0.85rem;">No customer data yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Row 6: Inventory Alerts + Quick Actions ─────────── -->
+  <div class="row g-4 mb-4">
+
+    <!-- Inventory Alert -->
+    <div class="col-lg-6">
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
+          <i class="bi bi-boxes" style="color:#fbbf24;"></i> Inventory Status
+        </h5>
+        <div class="row g-3">
+          <div class="col-6">
+            <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);
+                        border-radius:12px;padding:1rem;text-align:center;">
+              <div style="font-size:2rem;font-weight:800;color:#fbbf24;">{{ low_stock_products }}</div>
+              <div style="font-size:0.78rem;color:var(--text-secondary);">Low Stock Products</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);
+                        border-radius:12px;padding:1rem;text-align:center;">
+              <div style="font-size:2rem;font-weight:800;color:#ef4444;">{{ out_of_stock_products }}</div>
+              <div style="font-size:0.78rem;color:var(--text-secondary);">Out of Stock</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1rem;">
+          <a href="{{ url_for('admin.inventory') }}" class="btn-primary-custom"
+             style="text-decoration:none;width:100%;justify-content:center;">
+            <i class="bi bi-boxes"></i> Manage Inventory
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-6">
+      <div class="dashboard-card">
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
+          <i class="bi bi-lightning" style="color:var(--primary);"></i> Quick Actions
+        </h5>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <a href="{{ url_for('admin.product_add') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-plus-circle"></i> Add Product
+          </a>
+          <a href="{{ url_for('admin.orders') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-receipt"></i> View Orders
+          </a>
+          <a href="{{ url_for('coupon.admin_add') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-tags"></i> Create Coupon
+          </a>
+          <a href="{{ url_for('admin.users') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-people"></i> View Users
+          </a>
+          <a href="{{ url_for('admin.contacts') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;position:relative;">
+            <i class="bi bi-chat-dots"></i> Messages
+            {% if unread_contacts > 0 %}
+              <span style="background:#ef4444;color:white;font-size:0.65rem;font-weight:800;
+                           min-width:16px;height:16px;border-radius:50%;display:inline-flex;
+                           align-items:center;justify-content:center;padding:0 3px;margin-left:4px;">
+                {{ unread_contacts }}
+              </span>
+            {% endif %}
+          </a>
+          <a href="{{ url_for('admin.reviews') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-star"></i> Reviews
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Chart defaults ─────────────────────────────────────────────────────────
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+// ── Revenue Bar Chart ──────────────────────────────────────────────────────
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+new Chart(revenueCtx, {
+  type: 'bar',
+  data: {
+    labels: {{ monthly_labels | tojson }},
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: {{ monthly_data | tojson }},
+      backgroundColor: 'rgba(92,107,192,0.6)',
+      borderColor: 'rgba(92,107,192,1)',
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => '₹' + v.toLocaleString() } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Order Stats Doughnut ───────────────────────────────────────────────────
+const orderCtx = document.getElementById('orderStatsChart').getContext('2d');
+new Chart(orderCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Delivered', 'Pending', 'Cancelled'],
+    datasets: [{
+      data: [{{ delivered_orders }}, {{ pending_orders }}, {{ cancelled_orders }}],
+      backgroundColor: ['#27ae60', '#f59e0b', '#ef4444'],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.raw } }
+    },
+    cutout: '70%',
+  }
+});
+
+// ── Daily Orders Line Chart ────────────────────────────────────────────────
+const dailyCtx = document.getElementById('dailyOrdersChart').getContext('2d');
+new Chart(dailyCtx, {
+  type: 'line',
+  data: {
+    labels: {{ daily_labels | tojson }},
+    datasets: [{
+      label: 'Orders',
+      data: {{ daily_data | tojson }},
+      borderColor: 'rgba(16,185,129,1)',
+      backgroundColor: 'rgba(16,185,129,0.1)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: 'rgba(16,185,129,1)',
+      pointRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { stepSize: 1 }, min: 0 },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
 {% endblock %}

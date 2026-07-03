@@ -1,6 +1,10 @@
+"""
+app/routes/auth_routes.py
+Authentication: register, login, logout.
+Sends welcome and password change emails via email_helper.
+"""
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash
 
 from app.forms import RegisterForm, LoginForm
 from app.models import User
@@ -25,6 +29,13 @@ def register():
 
         db.session.add(user)
         db.session.commit()
+
+        # Send welcome email (graceful fallback)
+        try:
+            from app.helpers.email_helper import send_registration_email
+            send_registration_email(user)
+        except Exception:
+            pass
 
         flash("Account created successfully! Please log in.", "success")
         return redirect(url_for("auth.login"))

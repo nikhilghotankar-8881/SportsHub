@@ -8,11 +8,21 @@ import enum
 # ── Enums ────────────────────────────────────────────────────────────────────
 
 class OrderStatus(str, enum.Enum):
-    PENDING    = "pending"
-    PROCESSING = "processing"
-    SHIPPED    = "shipped"
-    DELIVERED  = "delivered"
-    CANCELLED  = "cancelled"
+    PLACED          = "placed"
+    CONFIRMED       = "confirmed"
+    PACKED          = "packed"
+    SHIPPED         = "shipped"
+    OUT_FOR_DELIVERY = "out_for_delivery"
+    DELIVERED       = "delivered"
+    CANCELLED       = "cancelled"
+    # Legacy aliases kept for backward compatibility
+    PENDING         = "pending"
+    PROCESSING      = "processing"
+
+
+class CouponType(str, enum.Enum):
+    PERCENTAGE = "percentage"
+    FIXED      = "fixed"
 
 
 # ── Models ───────────────────────────────────────────────────────────────────
@@ -69,14 +79,15 @@ class Product(db.Model):
 
     __tablename__ = "products"
 
-    id          = db.Column(db.Integer, primary_key=True)
-    name        = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    price       = db.Column(db.Numeric(10, 2), nullable=False)
-    stock       = db.Column(db.Integer, nullable=False, default=0)
-    image       = db.Column(db.String(300), nullable=True)
-    category    = db.Column(db.String(100), nullable=True)
-    created_at  = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    id           = db.Column(db.Integer, primary_key=True)
+    name         = db.Column(db.String(200), nullable=False)
+    description  = db.Column(db.Text, nullable=True)
+    price        = db.Column(db.Numeric(10, 2), nullable=False)
+    stock        = db.Column(db.Integer, nullable=False, default=0)
+    image        = db.Column(db.String(300), nullable=True)
+    category     = db.Column(db.String(100), nullable=True)
+    low_stock_threshold = db.Column(db.Integer, nullable=False, default=5)
+    created_at   = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
     cart_items = db.relationship(
@@ -111,18 +122,31 @@ class Product(db.Model):
         return self.stock > 0
 
     @property
+    def is_low_stock(self):
+        return 0 < self.stock <= self.low_stock_threshold
+
+    @property
+    def is_out_of_stock(self):
+        return self.stock <= 0
+
+    @property
     def formatted_price(self):
         return f"₹{self.price:,.2f}"
 
     @property
     def average_rating(self):
-        # Only fetch the scalar instead of loading all review objects
-        avg = db.session.query(db.func.avg(Review.rating)).filter(Review.product_id == self.id).scalar()
+        avg = db.session.query(db.func.avg(Review.rating)).filter(
+            Review.product_id == self.id
+        ).scalar()
         return round(float(avg), 1) if avg else 0.0
 
     @property
     def total_reviews(self):
         return self.reviews.count()
+
+    @property
+    def inventory_value(self):
+        return float(self.price) * self.stock
 
 
 class CartItem(db.Model):
@@ -161,17 +185,22 @@ class Order(db.Model):
     id               = db.Column(db.Integer, primary_key=True)
     user_id          = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     status           = db.Column(
-                           db.String(20),
+                           db.String(30),
                            nullable=False,
-                           default=OrderStatus.PROCESSING.value,
+                           default=OrderStatus.PLACED.value,
                        )
     total_amount     = db.Column(db.Numeric(12, 2), nullable=False)
+    discount_amount  = db.Column(db.Numeric(12, 2), nullable=False, default=0)
+    coupon_code      = db.Column(db.String(50), nullable=True)
+    gst_amount       = db.Column(db.Numeric(12, 2), nullable=False, default=0)
     # Shipping details captured at checkout
     shipping_name    = db.Column(db.String(150), nullable=False)
     shipping_address = db.Column(db.String(300), nullable=False)
     shipping_city    = db.Column(db.String(100), nullable=False)
     shipping_phone   = db.Column(db.String(20),  nullable=False)
     created_at       = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at       = db.Column(db.DateTime, nullable=False, default=datetime.utcnow,
+                                 onupdate=datetime.utcnow)
 
     # Relationships
     user        = db.relationship("User",      back_populates="orders")
@@ -181,25 +210,96 @@ class Order(db.Model):
         cascade="all, delete-orphan",
         lazy="select",
     )
+    status_history = db.relationship(
+        "OrderStatusHistory",
+        back_populates="order",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+        order_by="OrderStatusHistory.changed_at.asc()",
+    )
+
+    @property
+    def subtotal_amount(self):
+        return sum(item.line_total for item in self.order_items)
 
     @property
     def formatted_total(self):
         return f"₹{self.total_amount:,.2f}"
 
     @property
+    def formatted_discount(self):
+        return f"₹{self.discount_amount:,.2f}"
+
+    @property
+    def invoice_number(self):
+        return f"SH-INV-{self.id:06d}"
+
+    @property
     def status_badge(self):
         """Return (css_class, icon) tuple for the status badge."""
         MAP = {
-            "pending":    ("warning",  "bi-clock"),
-            "processing": ("info",     "bi-arrow-repeat"),
-            "shipped":    ("primary",  "bi-truck"),
-            "delivered":  ("success",  "bi-bag-check"),
-            "cancelled":  ("danger",   "bi-x-circle"),
+            "placed":           ("secondary", "bi-clock-history"),
+            "confirmed":        ("info",      "bi-check-circle"),
+            "packed":           ("warning",   "bi-box-seam"),
+            "shipped":          ("primary",   "bi-truck"),
+            "out_for_delivery": ("warning",   "bi-bicycle"),
+            "delivered":        ("success",   "bi-bag-check"),
+            "cancelled":        ("danger",    "bi-x-circle"),
+            # Legacy
+            "pending":          ("warning",   "bi-clock"),
+            "processing":       ("info",      "bi-arrow-repeat"),
         }
         return MAP.get(self.status, ("secondary", "bi-question-circle"))
 
+    @property
+    def status_label(self):
+        labels = {
+            "placed":           "Placed",
+            "confirmed":        "Confirmed",
+            "packed":           "Packed",
+            "shipped":          "Shipped",
+            "out_for_delivery": "Out for Delivery",
+            "delivered":        "Delivered",
+            "cancelled":        "Cancelled",
+            "pending":          "Pending",
+            "processing":       "Processing",
+        }
+        return labels.get(self.status, self.status.title())
+
     def __repr__(self):
         return f"<Order #{self.id} user={self.user_id} status={self.status}>"
+
+
+class OrderStatusHistory(db.Model):
+    """Tracks each status change for order tracking timeline."""
+
+    __tablename__ = "order_status_history"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    order_id   = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
+    status     = db.Column(db.String(30), nullable=False)
+    note       = db.Column(db.String(300), nullable=True)
+    changed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    order = db.relationship("Order", back_populates="status_history")
+
+    @property
+    def status_label(self):
+        labels = {
+            "placed":           "Order Placed",
+            "confirmed":        "Order Confirmed",
+            "packed":           "Order Packed",
+            "shipped":          "Shipped",
+            "out_for_delivery": "Out for Delivery",
+            "delivered":        "Delivered",
+            "cancelled":        "Cancelled",
+            "pending":          "Pending",
+            "processing":       "Processing",
+        }
+        return labels.get(self.status, self.status.title())
+
+    def __repr__(self):
+        return f"<OrderStatusHistory order={self.order_id} status={self.status}>"
 
 
 class OrderItem(db.Model):
@@ -251,6 +351,7 @@ class Wishlist(db.Model):
     def __repr__(self):
         return f"<Wishlist user={self.user_id} product={self.product_id}>"
 
+
 class Review(db.Model):
     __tablename__ = "reviews"
 
@@ -270,3 +371,83 @@ class Review(db.Model):
 
     def __repr__(self):
         return f"<Review user={self.user_id} product={self.product_id} rating={self.rating}>"
+
+
+# ── Phase 13 Models ──────────────────────────────────────────────────────────
+
+class Coupon(db.Model):
+    """Discount coupon model supporting percentage and fixed discounts."""
+
+    __tablename__ = "coupons"
+
+    id                = db.Column(db.Integer, primary_key=True)
+    code              = db.Column(db.String(50), unique=True, nullable=False)
+    description       = db.Column(db.String(200), nullable=True)
+    coupon_type       = db.Column(db.String(20), nullable=False, default=CouponType.PERCENTAGE.value)
+    discount_value    = db.Column(db.Numeric(10, 2), nullable=False)
+    minimum_purchase  = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    max_discount      = db.Column(db.Numeric(10, 2), nullable=True)   # cap for percentage coupons
+    usage_limit       = db.Column(db.Integer, nullable=True)          # None = unlimited
+    used_count        = db.Column(db.Integer, nullable=False, default=0)
+    is_active         = db.Column(db.Boolean, nullable=False, default=True)
+    expires_at        = db.Column(db.DateTime, nullable=True)
+    created_at        = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def is_valid(self, cart_total):
+        """Check if coupon is valid for the given cart total."""
+        from datetime import datetime as dt
+        if not self.is_active:
+            return False, "This coupon is inactive."
+        if self.expires_at and self.expires_at < dt.utcnow():
+            return False, "This coupon has expired."
+        if self.usage_limit is not None and self.used_count >= self.usage_limit:
+            return False, "This coupon usage limit has been reached."
+        if float(cart_total) < float(self.minimum_purchase):
+            return False, f"Minimum purchase of ₹{self.minimum_purchase:,.2f} required."
+        return True, "Valid"
+
+    def calculate_discount(self, cart_total):
+        """Calculate discount amount for given cart total."""
+        if self.coupon_type == CouponType.PERCENTAGE.value:
+            discount = float(cart_total) * float(self.discount_value) / 100
+            if self.max_discount:
+                discount = min(discount, float(self.max_discount))
+        else:
+            discount = min(float(self.discount_value), float(cart_total))
+        return round(discount, 2)
+
+    @property
+    def is_expired(self):
+        if self.expires_at and self.expires_at < datetime.utcnow():
+            return True
+        return False
+
+    @property
+    def type_label(self):
+        return "Percentage" if self.coupon_type == CouponType.PERCENTAGE.value else "Fixed Amount"
+
+    @property
+    def discount_display(self):
+        if self.coupon_type == CouponType.PERCENTAGE.value:
+            return f"{self.discount_value}%"
+        return f"₹{self.discount_value:,.2f}"
+
+    def __repr__(self):
+        return f"<Coupon {self.code} {self.discount_display}>"
+
+
+class Contact(db.Model):
+    """Customer contact / support message."""
+
+    __tablename__ = "contacts"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    name       = db.Column(db.String(100), nullable=False)
+    email      = db.Column(db.String(120), nullable=False)
+    subject    = db.Column(db.String(200), nullable=False)
+    message    = db.Column(db.Text, nullable=False)
+    is_read    = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Contact {self.email} '{self.subject}'>"

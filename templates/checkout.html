@@ -136,19 +136,65 @@
           {% endfor %}
         </div>
 
+        <!-- ══ Coupon Section ══════════════════════════════ -->
+        <div style="background:rgba(92,107,192,0.07);border:1px solid rgba(92,107,192,0.2);
+                    border-radius:var(--radius);padding:1rem;margin-bottom:1rem;">
+          <p style="font-size:0.85rem;font-weight:700;color:var(--text-primary);margin-bottom:0.6rem;">
+            <i class="bi bi-tags-fill" style="color:var(--primary);"></i> Apply Coupon
+          </p>
+          {% if coupon_code %}
+            <!-- Coupon applied state -->
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
+                           color:var(--success);padding:4px 10px;border-radius:20px;font-size:0.82rem;font-weight:700;">
+                <i class="bi bi-check-circle-fill"></i> {{ coupon_code }}
+              </span>
+              <span style="color:var(--success);font-size:0.82rem;">You saved ₹{{ "%.2f"|format(discount) }}!</span>
+              <form action="{{ url_for('coupon.remove_coupon') }}" method="POST" style="margin-left:auto;">
+                <button type="submit" style="background:none;border:none;color:var(--text-muted);
+                                             font-size:0.75rem;cursor:pointer;padding:0;">
+                  <i class="bi bi-x-circle"></i> Remove
+                </button>
+              </form>
+            </div>
+          {% else %}
+            <!-- Coupon input -->
+            <div id="coupon-section">
+              <div style="display:flex;gap:0.5rem;">
+                <input type="text" id="coupon_input" placeholder="Enter coupon code"
+                       style="flex:1;padding:8px 12px;border:1px solid var(--border);
+                              border-radius:8px;background:var(--bg-card-2);
+                              color:var(--text-primary);font-size:0.85rem;outline:none;" />
+                <button onclick="applyCoupon()" type="button"
+                        style="background:var(--gradient-primary);color:white;border:none;
+                               padding:8px 16px;border-radius:8px;font-size:0.82rem;
+                               font-weight:600;cursor:pointer;white-space:nowrap;">
+                  Apply
+                </button>
+              </div>
+              <div id="coupon-msg" style="font-size:0.8rem;margin-top:0.4rem;"></div>
+            </div>
+          {% endif %}
+        </div>
+
         <!-- Totals -->
         <div style="border-top:1px solid var(--border);padding-top:1rem;">
           <div style="display:flex;justify-content:space-between;
                       font-size:0.88rem;margin-bottom:0.5rem;">
             <span style="color:var(--text-secondary);">Subtotal</span>
-            <span style="font-weight:600;">₹{{ "%.2f"|format(total) }}</span>
+            <span style="font-weight:600;">₹{{ "%.2f"|format(subtotal) }}</span>
           </div>
+          {% if discount and discount > 0 %}
           <div style="display:flex;justify-content:space-between;
-                      font-size:0.88rem;margin-bottom:0.8rem;">
-            <span style="color:var(--text-secondary);">Delivery</span>
-            <span style="color:var(--success);font-weight:600;">
-              {% if total >= 999 %}Free{% else %}₹49.00{% endif %}
-            </span>
+                      font-size:0.88rem;margin-bottom:0.5rem;">
+            <span style="color:var(--success);">Discount ({{ coupon_code }})</span>
+            <span style="color:var(--success);font-weight:600;">-₹{{ "%.2f"|format(discount) }}</span>
+          </div>
+          {% endif %}
+          <div style="display:flex;justify-content:space-between;
+                      font-size:0.88rem;margin-bottom:0.5rem;">
+            <span style="color:var(--text-secondary);">GST (18%)</span>
+            <span style="font-weight:600;">₹{{ "%.2f"|format(gst_amount) }}</span>
           </div>
           <div style="display:flex;justify-content:space-between;
                       padding-top:0.8rem;border-top:1px solid var(--border);">
@@ -175,4 +221,44 @@
 
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function applyCoupon() {
+  var code = document.getElementById('coupon_input').value.trim();
+  if (!code) {
+    showCouponMsg('Please enter a coupon code.', 'danger');
+    return;
+  }
+  var formData = new FormData();
+  formData.append('coupon_code', code);
+
+  fetch('{{ url_for("coupon.apply_coupon") }}', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showCouponMsg(data.message, 'success');
+      setTimeout(() => window.location.reload(), 800);
+    } else {
+      showCouponMsg(data.message, 'danger');
+    }
+  })
+  .catch(() => showCouponMsg('Error applying coupon. Please try again.', 'danger'));
+}
+
+function showCouponMsg(msg, type) {
+  var el = document.getElementById('coupon-msg');
+  el.style.color = type === 'success' ? 'var(--success)' : '#e74c3c';
+  el.textContent = msg;
+}
+
+document.getElementById('coupon_input') && document.getElementById('coupon_input').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); }
+});
+</script>
 {% endblock %}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-box-seam" style="color:var(--primary);"></i>
+        <span class="text-gradient">{{ 'Edit' if product else 'Add' }} Product</span>
+      </h1>
+      <p class="page-subtitle">{{ 'Update product details.' if product else 'Add a new product to your store.' }}</p>
+    </div>
+    <a href="{{ url_for('admin.products') }}" class="btn-outline-custom" style="text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> Back to Products
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="dashboard-card">
+
+        <form method="POST" action="{{ url_for('admin.product_edit', product_id=product.id) if product else url_for('admin.product_add') }}">
+
+          <!-- Name -->
+          <div class="form-group">
+            <label class="form-label" for="name">
+              <i class="bi bi-tag"></i> Product Name <span style="color:#ef4444;">*</span>
+            </label>
+            <input type="text" id="name" name="name" class="form-control-custom"
+                   value="{{ product.name if product else '' }}"
+                   placeholder="e.g. Nike Air Max Running Shoes" required />
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label" for="description">
+              <i class="bi bi-card-text"></i> Description
+            </label>
+            <textarea id="description" name="description" class="form-control-custom"
+                      rows="4" placeholder="Enter product description...">{{ product.description if product else '' }}</textarea>
+          </div>
+
+          <!-- Price + Stock -->
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label" for="price">
+                  <i class="bi bi-currency-rupee"></i> Price (₹) <span style="color:#ef4444;">*</span>
+                </label>
+                <input type="number" id="price" name="price" class="form-control-custom"
+                       value="{{ product.price if product else '' }}"
+                       placeholder="999.00" min="0" step="0.01" required />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label" for="stock">
+                  <i class="bi bi-boxes"></i> Stock Quantity <span style="color:#ef4444;">*</span>
+                </label>
+                <input type="number" id="stock" name="stock" class="form-control-custom"
+                       value="{{ product.stock if product else '0' }}"
+                       placeholder="100" min="0" step="1" required />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label" for="low_stock_threshold">
+                  <i class="bi bi-exclamation-triangle"></i> Low Stock Alert
+                </label>
+                <input type="number" id="low_stock_threshold" name="low_stock_threshold" class="form-control-custom"
+                       value="{{ product.low_stock_threshold if product else '5' }}"
+                       placeholder="5" min="1" step="1" />
+                <small style="color:var(--text-muted);font-size:0.75rem;">Alert when stock falls below this number.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label" for="category">
+              <i class="bi bi-grid"></i> Category
+            </label>
+            <input type="text" id="category" name="category" class="form-control-custom"
+                   value="{{ product.category if product else '' }}"
+                   placeholder="e.g. Footwear, Apparel, Equipment"
+                   list="category-list" />
+            <datalist id="category-list">
+              {% for cat in categories %}
+              <option value="{{ cat }}">
+              {% endfor %}
+            </datalist>
+          </div>
+
+          <!-- Image URL -->
+          <div class="form-group">
+            <label class="form-label" for="image">
+              <i class="bi bi-image"></i> Image URL
+            </label>
+            <input type="url" id="image" name="image" class="form-control-custom"
+                   value="{{ product.image if product else '' }}"
+                   placeholder="https://example.com/product-image.jpg"
+                   oninput="previewImage(this.value)" />
+          </div>
+
+          <!-- Image Preview -->
+          <div id="image-preview" style="margin-bottom:1.5rem;display:{% if product and product.image %}block{% else %}none{% endif %};">
+            <label class="form-label"><i class="bi bi-eye"></i> Image Preview</label>
+            <img id="preview-img" src="{{ product.image if product and product.image else '' }}"
+                 alt="Preview" style="max-width:200px;max-height:200px;border-radius:12px;
+                                      border:1px solid var(--border);object-fit:cover;" />
+          </div>
+
+          <!-- Submit -->
+          <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+            <button type="submit" class="btn-submit" style="flex:1;">
+              <i class="bi bi-{% if product %}check-lg{% else %}plus-circle{% endif %}"></i>
+              {{ 'Update Product' if product else 'Add Product' }}
+            </button>
+            <a href="{{ url_for('admin.products') }}" class="btn-outline-custom" style="text-decoration:none;">
+              Cancel
+            </a>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function previewImage(url) {
+  var preview = document.getElementById('image-preview');
+  var img = document.getElementById('preview-img');
+  if (url) {
+    img.src = url;
+    preview.style.display = 'block';
+    img.onerror = function() { preview.style.display = 'none'; };
+  } else {
+    preview.style.display = 'none';
+  }
+}
+</script>
+{% endblock %}
