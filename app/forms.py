@@ -89,6 +89,24 @@ class ChangePasswordForm(FlaskForm):
 
     submit = SubmitField("Update Password")
 
+class PromotionForm(FlaskForm):
+    name = StringField('Promotion Name', validators=[DataRequired(), Length(max=150)])
+    description = TextAreaField('Description', validators=[Length(max=500)])
+    promo_type = SelectField('Type', choices=[('percentage', 'Percentage'), ('fixed', 'Fixed Amount')], validators=[DataRequired()])
+    discount_value = StringField('Discount Value', validators=[DataRequired()])
+    max_discount = StringField('Max Discount (optional)')
+    start_date = StringField('Start Date (YYYY-MM-DD HH:MM)', validators=[DataRequired()])
+    end_date = StringField('End Date (YYYY-MM-DD HH:MM)', validators=[DataRequired()])
+    usage_limit = StringField('Usage Limit (optional)')
+    submit = SubmitField('Save Promotion')
+
+class FlashSaleForm(FlaskForm):
+    product_id = SelectField('Product', coerce=int, validators=[DataRequired()])
+    discount_value = StringField('Discount %', validators=[DataRequired()])
+    start_time = StringField('Start Time (YYYY-MM-DD HH:MM)', validators=[DataRequired()])
+    end_time = StringField('End Time (YYYY-MM-DD HH:MM)', validators=[DataRequired()])
+    submit = SubmitField('Create Flash Sale')
+
 class ReviewForm(FlaskForm):
     rating = SelectField(
         "Rating",

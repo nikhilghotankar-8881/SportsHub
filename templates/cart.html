@@ -143,7 +143,12 @@
                            border:none;text-align:center;">
                   <span style="font-family:'Outfit',sans-serif;font-weight:700;
                                font-size:0.95rem;color:var(--text-primary);">
+                    {% if item.product.effective_price < item.product.price %}
+                    <span class="text-muted text-decoration-line-through me-1" style="font-size:0.85rem;">₹{{ "%.2f"|format(item.product.price) }}</span>
+                    <span class="text-danger">₹{{ "%.2f"|format(item.product.effective_price) }}</span>
+                    {% else %}
                     {{ item.product.formatted_price }}
+                    {% endif %}
                   </span>
                 </td>
 
@@ -270,7 +275,7 @@
                                font-weight:800;background:var(--gradient-accent);
                                -webkit-background-clip:text;-webkit-text-fill-color:transparent;
                                background-clip:text;">
-                    ₹{{ "%.2f"|format(total) }}
+                    ₹{{ "%.2f"|format(total - cart_promo_discount if total - cart_promo_discount > 0 else 0) }}
                   </span>
                 </td>
                 <td style="border:none;"></td>
@@ -313,12 +318,20 @@
 
         <!-- Divider + total -->
         <div style="border-top:1px solid var(--border);padding-top:1rem;margin-bottom:1.4rem;">
+          {% if cart_promo_discount > 0 %}
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+            <span style="color:var(--text-secondary);font-size:0.9rem;">Cart Discount</span>
+            <span style="font-weight:600;color:var(--success);">
+              -₹{{ "%.2f"|format(cart_promo_discount) }}
+            </span>
+          </div>
+          {% endif %}
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="color:var(--text-secondary);font-size:0.9rem;">Grand Total</span>
             <span style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;
                          background:var(--gradient-accent);-webkit-background-clip:text;
                          -webkit-text-fill-color:transparent;background-clip:text;">
-              ₹{{ "%.2f"|format(total) }}
+              ₹{{ "%.2f"|format(total - cart_promo_discount if total - cart_promo_discount > 0 else 0) }}
             </span>
           </div>
           <p style="color:var(--text-muted);font-size:0.78rem;margin-top:0.5rem;">

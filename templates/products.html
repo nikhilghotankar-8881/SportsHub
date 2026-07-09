@@ -181,7 +181,12 @@
 
                   <!-- Price + stock -->
                   <div style="display:flex;flex-direction:column;gap:0.2rem;">
+                    {% if product.effective_price < product.price %}
+                    <span class="product-price text-muted text-decoration-line-through me-1" style="font-size:0.85rem;">₹{{ "%.2f"|format(product.price) }}</span>
+                    <span class="product-price text-danger">₹{{ "%.2f"|format(product.effective_price) }}</span>
+                    {% else %}
                     <span class="product-price">{{ product.formatted_price }}</span>
+                    {% endif %}
                     {% if product.in_stock %}
                       <span class="product-stock">
                         <i class="bi bi-check-circle-fill" style="color:var(--success);"></i>

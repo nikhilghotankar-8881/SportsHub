@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 
+from decimal import Decimal
+
 from app import db
 from app.models import Product, CartItem
 
@@ -33,12 +35,32 @@ def cart():
     items = _get_cart_items()
     total = _cart_total(items)
     item_count = sum(i.quantity for i in items)
+    from datetime import datetime
+    from app.models import Promotion
+    
+    cart_promos = Promotion.query.filter(
+        Promotion.is_active == True,
+        Promotion.start_date <= datetime.utcnow(),
+        Promotion.end_date >= datetime.utcnow(),
+        ~Promotion.products.any(),
+        ~Promotion.categories.any()
+    ).all()
+    
+    from decimal import Decimal
+    best_cart_promo_discount = Decimal("0")
+    for promo in cart_promos:
+        if promo.usage_limit is None or promo.used_count < promo.usage_limit:
+            promo_disc = Decimal(str(promo.calculate_discount(total)))
+            if promo_disc > best_cart_promo_discount:
+                best_cart_promo_discount = promo_disc
+                
     return render_template(
         "cart.html",
         title="My Cart – SportsHub",
         items=items,
         total=total,
         item_count=item_count,
+        cart_promo_discount=best_cart_promo_discount,
     )
 
 

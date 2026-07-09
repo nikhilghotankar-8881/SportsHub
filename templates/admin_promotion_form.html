@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">{{ 'Edit' if form.name.data else 'Add' }} Promotion</h2>
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.name.label(class="form-label") }}
+      {{ form.name(class="form-control", placeholder="Promotion Name") }}
+      {% for error in form.name.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      {{ form.description.label(class="form-label") }}
+      {{ form.description(class="form-control", rows="3") }}
+    </div>
+    <div class="mb-3">
+      {{ form.promo_type.label(class="form-label") }}
+      {{ form.promo_type(class="form-select") }}
+    </div>
+    <div class="mb-3">
+      {{ form.discount_value.label(class="form-label") }}
+      {{ form.discount_value(class="form-control", placeholder="e.g., 10 for 10% or 500 for ₹500") }}
+    </div>
+    <div class="mb-3">
+      {{ form.max_discount.label(class="form-label") }}
+      {{ form.max_discount(class="form-control", placeholder="Optional max discount for % type") }}
+    </div>
+    <div class="mb-3">
+      {{ form.start_date.label(class="form-label") }}
+      {{ form.start_date(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
+    </div>
+    <div class="mb-3">
+      {{ form.end_date.label(class="form-label") }}
+      {{ form.end_date(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
+    </div>
+    <div class="mb-3">
+      {{ form.usage_limit.label(class="form-label") }}
+      {{ form.usage_limit(class="form-control", placeholder="Optional usage limit") }}
+    </div>
+    <button type="submit" class="btn btn-primary-custom">{{ form.submit.label.text }}</button>
+    <a href="{{ url_for('promotion.list_promotions') }}" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+</div>
+{% endblock %}

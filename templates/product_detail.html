@@ -60,7 +60,12 @@
 
         <h1 class="product-detail-name">{{ product.name }}</h1>
 
+        {% if product.effective_price < product.price %}
+        <span class="product-detail-price text-muted text-decoration-line-through me-2" style="font-size:1.4rem;">₹{{ "%.2f"|format(product.price) }}</span>
+        <span class="product-detail-price text-danger">₹{{ "%.2f"|format(product.effective_price) }}</span>
+        {% else %}
         <span class="product-detail-price">{{ product.formatted_price }}</span>
+        {% endif %}
 
         <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
           <div style="color: #fbbf24; font-size: 1.1rem;">

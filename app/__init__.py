@@ -32,6 +32,8 @@ def create_app():
     from app.routes.auth_routes import auth
     from app.routes.main_routes import main
     from app.routes.product_routes import products_bp
+    from app.routes.promotion_routes import promotion_bp
+    from app.routes.flashsale_routes import flashsale_bp
     from app.routes.cart_routes import cart_bp
     from app.routes.checkout_routes import checkout_bp
     from app.routes.order_routes import orders_bp
@@ -49,6 +51,8 @@ def create_app():
     app.register_blueprint(auth)
     app.register_blueprint(main)
     app.register_blueprint(products_bp)
+    app.register_blueprint(promotion_bp)
+    app.register_blueprint(flashsale_bp)
     app.register_blueprint(cart_bp)
     app.register_blueprint(checkout_bp)
     app.register_blueprint(orders_bp)

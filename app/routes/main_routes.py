@@ -9,19 +9,35 @@ from app import db
 
 main = Blueprint("main", __name__)
 
-from app.models import Product
-
+from app.models import Product, FlashSale, Promotion
+from datetime import datetime
 
 @main.route("/")
 @main.route("/home")
 def index():
     featured_products = Product.query.limit(4).all()
     latest_arrivals   = Product.query.order_by(Product.created_at.desc()).limit(4).all()
+    
+    # Homepage Promotions
+    now = datetime.utcnow()
+    active_flash_sales = FlashSale.query.filter(
+        FlashSale.start_time <= now,
+        FlashSale.end_time >= now
+    ).all()
+    
+    active_promotions = Promotion.query.filter(
+        Promotion.is_active == True,
+        Promotion.start_date <= now,
+        Promotion.end_date >= now
+    ).all()
+
     return render_template(
         "index.html",
         title="SportsHub - Home",
         featured_products=featured_products,
         latest_arrivals=latest_arrivals,
+        active_flash_sales=active_flash_sales,
+        active_promotions=active_promotions,
     )
 
 

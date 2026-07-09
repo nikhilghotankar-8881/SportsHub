@@ -111,6 +111,45 @@
   </div>
 </section>
 
+<!-- ── Active Promotions & Flash Sales ── -->
+{% if active_flash_sales or active_promotions %}
+<section style="padding: 2rem 0; background: var(--bg-card-1);">
+  <div class="container-custom">
+    <div class="row g-4">
+      {% for flash_sale in active_flash_sales %}
+      <div class="col-md-6 col-lg-4">
+        <div class="dashboard-card h-100" style="border: 2px solid var(--accent);">
+          <div class="card-icon icon-orange" style="margin-bottom:0.5rem;"><i class="bi bi-lightning-fill" style="color:#fbbf24;"></i></div>
+          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;color:var(--accent);">FLASH SALE: {{ flash_sale.discount_value }}% OFF</h5>
+          <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1rem;">
+            On <a href="{{ url_for('products.product_detail', product_id=flash_sale.product.id) }}" style="color:var(--primary);text-decoration:none;font-weight:bold;">{{ flash_sale.product.name }}</a>
+          </p>
+          <div style="font-size:0.8rem;color:var(--text-muted);">
+            <i class="bi bi-clock-history"></i> Ends: {{ flash_sale.end_time.strftime('%b %d, %I:%M %p') }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      
+      {% for promo in active_promotions %}
+      <div class="col-md-6 col-lg-4">
+        <div class="dashboard-card h-100" style="border: 1px solid var(--primary);">
+          <div class="card-icon icon-blue" style="margin-bottom:0.5rem;"><i class="bi bi-megaphone-fill" style="color:#00c6ff;"></i></div>
+          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;color:var(--primary);">{{ promo.name }}</h5>
+          <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1rem;">
+            {% if promo.description %}{{ promo.description }}{% else %}Special discount available now!{% endif %}
+          </p>
+          <div style="font-size:0.8rem;color:var(--text-muted);">
+            <i class="bi bi-calendar-event"></i> Ends: {{ promo.end_date.strftime('%b %d') }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <!-- ── Featured Products ── -->
 <section style="padding: 5rem 0;">
   <div class="container-custom">
@@ -160,7 +199,14 @@
               </div>
               
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                {% if product.effective_price < product.price %}
+                <p class="product-price" style="margin:0;">
+                  <span class="text-muted text-decoration-line-through me-1" style="font-size:0.85rem;">₹{{ "%.2f"|format(product.price) }}</span>
+                  <span class="text-danger">₹{{ "%.2f"|format(product.effective_price) }}</span>
+                </p>
+                {% else %}
                 <p class="product-price" style="margin:0;">{{ product.formatted_price }}</p>
+                {% endif %}
                 {% set in_wishlist = False %}
                 {% if current_user.is_authenticated %}
                   {% set in_wishlist = current_user.wishlist_items.filter_by(product_id=product.id).first() is not none %}
@@ -246,7 +292,14 @@
                 </div>
                 <span style="color: var(--text-muted); font-size: 0.75rem;">({{ product.total_reviews }})</span>
               </div>
+              {% if product.effective_price < product.price %}
+              <p class="product-price" style="margin-bottom:0;">
+                <span class="text-muted text-decoration-line-through me-1" style="font-size:0.85rem;">₹{{ "%.2f"|format(product.price) }}</span>
+                <span class="text-danger">₹{{ "%.2f"|format(product.effective_price) }}</span>
+              </p>
+              {% else %}
               <p class="product-price" style="margin-bottom:0;">{{ product.formatted_price }}</p>
+              {% endif %}
             </div>
           </a>
         </div>

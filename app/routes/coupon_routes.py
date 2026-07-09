@@ -9,6 +9,7 @@ from flask import (
 from flask_login import login_required, current_user
 from functools import wraps
 from datetime import datetime
+from decimal import Decimal
 
 from app import db
 from app.models import Coupon, CartItem, CouponType
@@ -48,6 +49,13 @@ def apply_coupon():
         flash(resp["message"], "danger")
         return redirect(url_for("checkout.checkout"))
 
+    if session.get("coupon_code") == coupon.code:
+        resp = {"success": False, "message": "Coupon is already applied."}
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify(resp)
+        flash(resp["message"], "info")
+        return redirect(url_for("checkout.checkout"))
+
     valid, msg = coupon.is_valid(cart_total)
     if not valid:
         resp = {"success": False, "message": msg}
@@ -59,15 +67,15 @@ def apply_coupon():
     discount = coupon.calculate_discount(cart_total)
     # Store in session for use at order placement
     session["coupon_code"]     = coupon.code
-    session["coupon_discount"] = discount
+    session["coupon_discount"] = str(discount)
 
     resp = {
         "success":          True,
         "message":          f"Coupon '{code}' applied! You save ₹{discount:,.2f}",
-        "discount":         discount,
+        "discount":         float(discount),
         "coupon_code":      code,
         "cart_total":       float(cart_total),
-        "payable":          max(0.0, float(cart_total) - discount),
+        "payable":          max(0.0, float(cart_total) - float(discount)),
     }
     if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify(resp)
@@ -128,10 +136,11 @@ def admin_add():
             return redirect(url_for("coupon.admin_add"))
 
         try:
-            discount_val = float(discount_val)
-            min_purchase = float(min_purchase)
+            discount_val = Decimal(discount_val)
+            min_purchase = Decimal(min_purchase)
+            max_discount_dec = Decimal(max_discount) if max_discount else None
         except ValueError:
-            flash("Invalid discount value or minimum purchase.", "danger")
+            flash("Invalid numeric values.", "danger")
             return redirect(url_for("coupon.admin_add"))
 
         expires_at = None
@@ -151,14 +160,18 @@ def admin_add():
             coupon_type      = coupon_type,
             discount_value   = discount_val,
             minimum_purchase = min_purchase,
-            max_discount     = float(max_discount) if max_discount else None,
+            max_discount     = max_discount_dec,
             usage_limit      = int(usage_limit) if usage_limit else None,
             is_active        = is_active,
             expires_at       = expires_at,
         )
         db.session.add(coupon)
-        db.session.commit()
-        flash(f"Coupon '{code}' created successfully.", "success")
+        try:
+            db.session.commit()
+            flash(f"Coupon '{code}' created successfully.", "success")
+        except Exception:
+            db.session.rollback()
+            flash("A database error occurred. Could not create coupon.", "danger")
         return redirect(url_for("coupon.admin_list"))
 
     return render_template(
@@ -183,14 +196,13 @@ def admin_edit(coupon_id):
         coupon.is_active      = request.form.get("is_active") == "on"
 
         try:
-            coupon.discount_value   = float(request.form.get("discount_value", 0))
-            coupon.minimum_purchase = float(request.form.get("minimum_purchase", 0))
+            coupon.discount_value   = Decimal(request.form.get("discount_value", 0))
+            coupon.minimum_purchase = Decimal(request.form.get("minimum_purchase", 0))
+            max_discount = request.form.get("max_discount", "")
+            coupon.max_discount = Decimal(max_discount) if max_discount else None
         except ValueError:
             flash("Invalid numeric values.", "danger")
             return redirect(url_for("coupon.admin_edit", coupon_id=coupon_id))
-
-        max_discount = request.form.get("max_discount", "")
-        coupon.max_discount = float(max_discount) if max_discount else None
 
         usage_limit = request.form.get("usage_limit", "")
         coupon.usage_limit = int(usage_limit) if usage_limit else None
@@ -208,8 +220,13 @@ def admin_edit(coupon_id):
         else:
             coupon.expires_at = None
 
-        db.session.commit()
-        flash(f"Coupon '{coupon.code}' updated.", "success")
+        try:
+            db.session.commit()
+            flash(f"Coupon '{coupon.code}' updated.", "success")
+        except Exception:
+            db.session.rollback()
+            flash("A database error occurred. Could not update coupon.", "danger")
+            
         return redirect(url_for("coupon.admin_list"))
 
     return render_template(
@@ -228,8 +245,12 @@ def admin_delete(coupon_id):
     coupon = Coupon.query.get_or_404(coupon_id)
     code = coupon.code
     db.session.delete(coupon)
-    db.session.commit()
-    flash(f"Coupon '{code}' deleted.", "success")
+    try:
+        db.session.commit()
+        flash(f"Coupon '{code}' deleted.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("A database error occurred. Could not delete coupon.", "danger")
     return redirect(url_for("coupon.admin_list"))
 
 
@@ -240,7 +261,11 @@ def admin_toggle(coupon_id):
     """Toggle coupon active/inactive."""
     coupon = Coupon.query.get_or_404(coupon_id)
     coupon.is_active = not coupon.is_active
-    db.session.commit()
-    state = "activated" if coupon.is_active else "deactivated"
-    flash(f"Coupon '{coupon.code}' {state}.", "success")
+    try:
+        db.session.commit()
+        state = "activated" if coupon.is_active else "deactivated"
+        flash(f"Coupon '{coupon.code}' {state}.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("A database error occurred. Could not toggle coupon.", "danger")
     return redirect(url_for("coupon.admin_list"))

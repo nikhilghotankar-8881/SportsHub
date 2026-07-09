@@ -10,7 +10,7 @@ from flask_login import login_required, current_user
 from decimal import Decimal
 
 from app import db
-from app.models import Order, OrderItem, CartItem, Coupon, OrderStatusHistory
+from app.models import Order, OrderItem, CartItem, Coupon, OrderStatusHistory, Promotion, PromotionCategory, PromotionProduct
 from app.helpers.email_helper import (
     send_order_confirmation_email, send_coupon_applied_email
 )
@@ -71,7 +71,29 @@ def checkout():
             session.pop("coupon_discount", None)
             coupon_code, discount = None, Decimal("0")
 
-    taxable_amount = subtotal - discount
+    # Check for active cart-level promotions (no products or categories attached)
+    from datetime import datetime
+    cart_promos = Promotion.query.filter(
+        Promotion.is_active == True,
+        Promotion.start_date <= datetime.utcnow(),
+        Promotion.end_date >= datetime.utcnow(),
+        ~Promotion.products.any(),
+        ~Promotion.categories.any()
+    ).all()
+
+    best_cart_promo_discount = Decimal("0")
+    for promo in cart_promos:
+        if promo.usage_limit is None or promo.used_count < promo.usage_limit:
+            promo_disc = Decimal(str(promo.calculate_discount(subtotal)))
+            if promo_disc > best_cart_promo_discount:
+                best_cart_promo_discount = promo_disc
+
+    total_discount = discount + best_cart_promo_discount
+    taxable_amount = subtotal - total_discount
+    if taxable_amount < Decimal("0"):
+        taxable_amount = Decimal("0")
+        total_discount = subtotal
+
     gst_amount     = (taxable_amount * GST_RATE / 100).quantize(Decimal("0.01"))
     total          = taxable_amount + gst_amount
 
@@ -116,52 +138,57 @@ def checkout():
             return redirect(url_for("cart.cart"))
 
         # ── Create Order ──────────────────────────────────────
-        order = Order(
-            user_id          = current_user.id,
-            status           = "placed",
-            total_amount     = total,
-            discount_amount  = discount,
-            coupon_code      = coupon_code,
-            gst_amount       = gst_amount,
-            shipping_name    = name,
-            shipping_address = address,
-            shipping_city    = city,
-            shipping_phone   = phone,
-        )
-        db.session.add(order)
-        db.session.flush()  # get order.id
-
-        # ── Create OrderItems + deduct stock ──────────────────
-        for item in items:
-            order_item = OrderItem(
-                order_id   = order.id,
-                product_id = item.product_id,
-                quantity   = item.quantity,
-                unit_price = item.product.price,
+        try:
+            order = Order(
+                user_id          = current_user.id,
+                status           = "placed",
+                total_amount     = total,
+                discount_amount  = total_discount,
+                coupon_code      = coupon_code,
+                gst_amount       = gst_amount,
+                shipping_name    = name,
+                shipping_address = address,
+                shipping_city    = city,
+                shipping_phone   = phone,
             )
-            db.session.add(order_item)
-            item.product.stock -= item.quantity
+            db.session.add(order)
+            db.session.flush()  # get order.id
 
-        # ── Initial status history entry ──────────────────────
-        history = OrderStatusHistory(
-            order_id = order.id,
-            status   = "placed",
-            note     = "Order placed successfully.",
-        )
-        db.session.add(history)
+            # ── Create OrderItems + deduct stock ──────────────────
+            for item in items:
+                order_item = OrderItem(
+                    order_id   = order.id,
+                    product_id = item.product_id,
+                    quantity   = item.quantity,
+                    unit_price = Decimal(str(item.product.effective_price)),
+                )
+                db.session.add(order_item)
+                item.product.stock -= item.quantity
 
-        # ── Increment coupon usage ────────────────────────────
-        coupon_obj = None
-        if coupon_code:
-            coupon_obj = Coupon.query.filter_by(code=coupon_code).first()
-            if coupon_obj:
-                coupon_obj.used_count += 1
+            # ── Initial status history entry ──────────────────────
+            history = OrderStatusHistory(
+                order_id = order.id,
+                status   = "placed",
+                note     = "Order placed successfully.",
+            )
+            db.session.add(history)
 
-        # ── Clear cart ────────────────────────────────────────
-        for item in items:
-            db.session.delete(item)
+            # ── Increment coupon usage ────────────────────────────
+            coupon_obj = None
+            if coupon_code:
+                coupon_obj = Coupon.query.filter_by(code=coupon_code).first()
+                if coupon_obj:
+                    coupon_obj.used_count += 1
 
-        db.session.commit()
+            # ── Clear cart ────────────────────────────────────────
+            for item in items:
+                db.session.delete(item)
+
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash("An error occurred while placing your order. Please try again.", "danger")
+            return redirect(url_for("checkout.checkout"))
 
         # ── Clear coupon session ──────────────────────────────
         session.pop("coupon_code", None)

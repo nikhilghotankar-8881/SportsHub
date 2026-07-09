@@ -2,6 +2,7 @@ from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from decimal import Decimal
 import enum
 
 
@@ -141,6 +142,53 @@ class Product(db.Model):
         return round(float(avg), 1) if avg else 0.0
 
     @property
+    def effective_price(self):
+        """Calculate the lowest price after applying active flash sales and promotions."""
+        best_price = float(self.price)
+        
+        # 1. Check Flash Sales
+        from datetime import datetime
+        flash_sales = FlashSale.query.filter_by(product_id=self.id).all()
+        for fs in flash_sales:
+            if fs.is_active():
+                discounted = float(self.price) - fs.calculate_discount(self.price)
+                if discounted < best_price:
+                    best_price = discounted
+
+        # 2. Check Product-Specific Promotions
+        product_promos = Promotion.query.join(PromotionProduct).filter(
+            PromotionProduct.product_id == self.id,
+            Promotion.is_active == True,
+            Promotion.start_date <= datetime.utcnow(),
+            Promotion.end_date >= datetime.utcnow()
+        ).all()
+        for promo in product_promos:
+            if promo.usage_limit is None or promo.used_count < promo.usage_limit:
+                discounted = float(self.price) - promo.calculate_discount(self.price)
+                if discounted < best_price:
+                    best_price = discounted
+
+        # 3. Check Category-Specific Promotions
+        if self.category:
+            cat_promos = Promotion.query.join(PromotionCategory).filter(
+                PromotionCategory.category == self.category,
+                Promotion.is_active == True,
+                Promotion.start_date <= datetime.utcnow(),
+                Promotion.end_date >= datetime.utcnow()
+            ).all()
+            for promo in cat_promos:
+                if promo.usage_limit is None or promo.used_count < promo.usage_limit:
+                    discounted = float(self.price) - promo.calculate_discount(self.price)
+                    if discounted < best_price:
+                        best_price = discounted
+
+        return max(0.0, round(best_price, 2))
+
+    @property
+    def formatted_effective_price(self):
+        return f"₹{self.effective_price:,.2f}"
+
+    @property
     def total_reviews(self):
         return self.reviews.count()
 
@@ -167,7 +215,7 @@ class CartItem(db.Model):
 
     @property
     def subtotal(self):
-        return self.product.price * self.quantity
+        return Decimal(str(self.product.effective_price)) * self.quantity
 
     @property
     def formatted_subtotal(self):
@@ -377,9 +425,9 @@ class Review(db.Model):
 
 class Coupon(db.Model):
     """Discount coupon model supporting percentage and fixed discounts."""
-
+    
     __tablename__ = "coupons"
-
+    
     id                = db.Column(db.Integer, primary_key=True)
     code              = db.Column(db.String(50), unique=True, nullable=False)
     description       = db.Column(db.String(200), nullable=True)
@@ -402,19 +450,20 @@ class Coupon(db.Model):
             return False, "This coupon has expired."
         if self.usage_limit is not None and self.used_count >= self.usage_limit:
             return False, "This coupon usage limit has been reached."
-        if float(cart_total) < float(self.minimum_purchase):
+        if Decimal(str(cart_total)) < Decimal(str(self.minimum_purchase)):
             return False, f"Minimum purchase of ₹{self.minimum_purchase:,.2f} required."
         return True, "Valid"
 
     def calculate_discount(self, cart_total):
         """Calculate discount amount for given cart total."""
+        cart_total_dec = Decimal(str(cart_total))
         if self.coupon_type == CouponType.PERCENTAGE.value:
-            discount = float(cart_total) * float(self.discount_value) / 100
+            discount = cart_total_dec * Decimal(str(self.discount_value)) / Decimal("100")
             if self.max_discount:
-                discount = min(discount, float(self.max_discount))
+                discount = min(discount, Decimal(str(self.max_discount)))
         else:
-            discount = min(float(self.discount_value), float(cart_total))
-        return round(discount, 2)
+            discount = min(Decimal(str(self.discount_value)), cart_total_dec)
+        return discount.quantize(Decimal("0.01"))
 
     @property
     def is_expired(self):
@@ -434,6 +483,108 @@ class Coupon(db.Model):
 
     def __repr__(self):
         return f"<Coupon {self.code} {self.discount_display}>"
+
+# ── Phase 14 Models ──────────────────────────────────────────────────────────
+
+class Promotion(db.Model):
+    """Promotion model representing a discount campaign that can apply to
+    specific products, categories, or the entire cart. Supports percentage
+    or fixed amount discounts with start/end dates and usage limits."""
+
+    __tablename__ = "promotions"
+
+    id                = db.Column(db.Integer, primary_key=True)
+    name              = db.Column(db.String(150), nullable=False)
+    description       = db.Column(db.Text, nullable=True)
+    promo_type        = db.Column(db.String(20), nullable=False)  # "percentage" or "fixed"
+    discount_value    = db.Column(db.Numeric(10, 2), nullable=False)
+    max_discount      = db.Column(db.Numeric(10, 2), nullable=True)  # for percentage type
+    start_date        = db.Column(db.DateTime, nullable=False)
+    end_date          = db.Column(db.DateTime, nullable=False)
+    usage_limit       = db.Column(db.Integer, nullable=True)  # None = unlimited
+    used_count        = db.Column(db.Integer, nullable=False, default=0)
+    is_active         = db.Column(db.Boolean, nullable=False, default=True)
+    created_at        = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    # relationships for specific targets
+    products   = db.relationship('PromotionProduct', back_populates='promotion', cascade='all, delete-orphan', lazy='dynamic')
+    categories = db.relationship('PromotionCategory', back_populates='promotion', cascade='all, delete-orphan', lazy='dynamic')
+
+    def is_current(self):
+        now = datetime.utcnow()
+        return self.is_active and self.start_date <= now <= self.end_date
+
+    def is_valid(self, cart_total):
+        if not self.is_current():
+            return False, "Promotion is not active."
+        if self.usage_limit is not None and self.used_count >= self.usage_limit:
+            return False, "Promotion usage limit reached."
+        return True, "Valid"
+
+    def calculate_discount(self, applicable_total):
+        if self.promo_type == 'percentage':
+            discount = float(applicable_total) * float(self.discount_value) / 100
+            if self.max_discount:
+                discount = min(discount, float(self.max_discount))
+        else:
+            discount = min(float(self.discount_value), float(applicable_total))
+        return round(discount, 2)
+
+    def __repr__(self):
+        return f"<Promotion {self.name} {self.promo_type} {self.discount_value}>"
+
+class PromotionProduct(db.Model):
+    """Association table linking a promotion to specific products."""
+    __tablename__ = "promotion_products"
+    id          = db.Column(db.Integer, primary_key=True)
+    promotion_id = db.Column(db.Integer, db.ForeignKey('promotions.id'), nullable=False)
+    product_id   = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+
+    promotion = db.relationship('Promotion', back_populates='products')
+    product   = db.relationship('Product')
+
+    __table_args__ = (db.UniqueConstraint('promotion_id', 'product_id', name='uq_promo_product'),)
+
+    def __repr__(self):
+        return f"<PromotionProduct promo={self.promotion_id} product={self.product_id}>"
+
+class PromotionCategory(db.Model):
+    """Association table linking a promotion to product categories."""
+    __tablename__ = "promotion_categories"
+    id          = db.Column(db.Integer, primary_key=True)
+    promotion_id = db.Column(db.Integer, db.ForeignKey('promotions.id'), nullable=False)
+    category    = db.Column(db.String(100), nullable=False)
+
+    promotion = db.relationship('Promotion', back_populates='categories')
+
+    __table_args__ = (db.UniqueConstraint('promotion_id', 'category', name='uq_promo_category'),)
+
+    def __repr__(self):
+        return f"<PromotionCategory promo={self.promotion_id} category={self.category}>"
+
+class FlashSale(db.Model):
+    """Flash sale model for limited‑time, high‑discount offers on specific products."""
+    __tablename__ = "flash_sales"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    product_id  = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    discount_value = db.Column(db.Numeric(10, 2), nullable=False)  # percentage discount for flash sale
+    start_time  = db.Column(db.DateTime, nullable=False)
+    end_time    = db.Column(db.DateTime, nullable=False)
+    created_at  = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    product = db.relationship('Product')
+
+    def is_active(self):
+        now = datetime.utcnow()
+        return self.start_time <= now <= self.end_time
+
+    def calculate_discount(self, price):
+        discount = float(price) * float(self.discount_value) / 100
+        return round(discount, 2)
+
+    def __repr__(self):
+        return f"<FlashSale product={self.product_id} {self.discount_value}%>"
 
 
 class Contact(db.Model):
