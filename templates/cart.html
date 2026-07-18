@@ -159,6 +159,7 @@
                         action="{{ url_for('cart.update', cart_item_id=item.id) }}"
                         id="update-form-{{ item.id }}"
                         style="display:inline-flex;align-items:center;gap:0.4rem;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <!-- ± stepper -->
                     <div style="display:inline-flex;align-items:center;
@@ -233,6 +234,7 @@
                   <form method="POST"
                         action="{{ url_for('cart.remove', cart_item_id=item.id) }}"
                         id="remove-form-{{ item.id }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit"
                             class="btn btn-sm"
                             id="remove-btn-{{ item.id }}"

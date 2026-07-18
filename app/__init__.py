@@ -1,13 +1,18 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
+from flask_wtf.csrf import CSRFProtect
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
+csrf = CSRFProtect()
 
 login_manager.login_view = "auth.login"
 login_manager.login_message_category = "info"
@@ -27,6 +32,7 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
     mail.init_app(app)
+    csrf.init_app(app)
 
     # ── Existing blueprints ──────────────────────────────────────────────────
     from app.routes.auth_routes import auth
@@ -47,6 +53,7 @@ def create_app():
     from app.routes.inventory_routes import inventory_bp
     from app.routes.contact_routes import contact_bp
     from app.routes.static_pages_routes import static_pages_bp
+    from app.routes.payment_routes import payment_bp
 
     app.register_blueprint(auth)
     app.register_blueprint(main)
@@ -64,6 +71,7 @@ def create_app():
     app.register_blueprint(inventory_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(static_pages_bp)
+    app.register_blueprint(payment_bp)
 
     from app import models  # noqa: F401
 

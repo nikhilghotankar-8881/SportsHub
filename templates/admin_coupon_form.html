@@ -22,6 +22,7 @@
       <div class="dashboard-card">
 
         <form method="POST" action="{{ url_for('coupon.admin_edit', coupon_id=coupon.id) if coupon else url_for('coupon.admin_add') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
           <!-- Code -->
           <div class="form-group">

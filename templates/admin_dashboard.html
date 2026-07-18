@@ -24,6 +24,9 @@
       <a href="{{ url_for('coupon.admin_list') }}" class="btn-outline-custom" style="text-decoration:none;">
         <i class="bi bi-tags"></i> Coupons
       </a>
+      <a href="{{ url_for('admin.payments') }}" class="btn-outline-custom" style="text-decoration:none;">
+        <i class="bi bi-credit-card-2-front"></i> Payments
+      </a>
       <a href="{{ url_for('admin.contacts') }}" class="btn-primary-custom" style="text-decoration:none;position:relative;">
         <i class="bi bi-chat-dots"></i> Messages
         {% if unread_contacts > 0 %}
@@ -333,9 +336,9 @@
              style="text-decoration:none;justify-content:center;">
             <i class="bi bi-receipt"></i> View Orders
           </a>
-          <a href="{{ url_for('coupon.admin_add') }}" class="btn-outline-custom"
+          <a href="{{ url_for('coupon.admin_list') }}" class="btn-outline-custom"
              style="text-decoration:none;justify-content:center;">
-            <i class="bi bi-tags"></i> Create Coupon
+            <i class="bi bi-tags"></i> Manage Coupons
           </a>
           <a href="{{ url_for('admin.users') }}" class="btn-outline-custom"
              style="text-decoration:none;justify-content:center;">
@@ -351,6 +354,10 @@
                 {{ unread_contacts }}
               </span>
             {% endif %}
+          </a>
+          <a href="{{ url_for('admin.payments') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-credit-card-2-front"></i> Payments
           </a>
           <a href="{{ url_for('admin.reviews') }}" class="btn-outline-custom"
              style="text-decoration:none;justify-content:center;">

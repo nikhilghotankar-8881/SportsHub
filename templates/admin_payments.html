@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Payments – Admin – SportsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+  <!-- Header -->
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-credit-card-2-front" style="color:var(--primary);"></i>
+        Payment <span class="text-gradient">Dashboard</span>
+      </h1>
+      <p class="page-subtitle">Track all transactions, revenue and refunds.</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn-outline-custom" style="text-decoration:none;">
+      <i class="bi bi-speedometer2"></i> Admin Dashboard
+    </a>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row g-4 mb-4">
+    {% set stats = [
+      ("bi-wallet2",          "var(--primary)",  "Total Payments",    total_payments,             ""),
+      ("bi-calendar-day",     "#60a5fa",         "Today's Payments",  today_payments,             ""),
+      ("bi-check-circle",     "var(--success)",  "Successful",        successful,                 ""),
+      ("bi-x-circle",         "#ef4444",         "Failed",            failed,                     ""),
+      ("bi-hourglass-split",  "#fbbf24",         "Pending",           pending,                    ""),
+      ("bi-graph-up-arrow",   "#a78bfa",         "Revenue Collected", "₹" ~ "%.0f"|format(total_revenue), ""),
+    ] %}
+    {% for icon, color, label, value, _ in stats %}
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="dashboard-card" style="text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:0.4rem;"><i class="bi {{ icon }}" style="color:{{ color }};"></i></div>
+        <h4 style="font-family:'Outfit',sans-serif;font-weight:800;margin:0;font-size:1.1rem;">{{ value }}</h4>
+        <p style="font-size:0.75rem;color:var(--text-secondary);margin:0;">{{ label }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Filters -->
+  <div class="dashboard-card mb-4">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-12 col-md-3">
+        <label class="form-label" style="font-size:0.8rem;font-weight:600;">Search</label>
+        <input type="text" name="q" value="{{ search_query }}" class="form-control"
+               placeholder="Name / Email / Payment ID"
+               style="background:var(--bg-card-2);border:1px solid var(--border);color:var(--text-primary);">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" style="font-size:0.8rem;font-weight:600;">Status</label>
+        <select name="status" class="form-select" style="background:var(--bg-card-2);border:1px solid var(--border);color:var(--text-primary);">
+          <option value="">All</option>
+          {% for s in [PaymentStatus.PAID, PaymentStatus.PENDING, PaymentStatus.FAILED, PaymentStatus.CANCELLED, PaymentStatus.REFUNDED] %}
+          <option value="{{ s.value }}" {% if status_filter == s.value %}selected{% endif %}>{{ s.value }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" style="font-size:0.8rem;font-weight:600;">From</label>
+        <input type="date" name="date_from" value="{{ date_from }}" class="form-control"
+               style="background:var(--bg-card-2);border:1px solid var(--border);color:var(--text-primary);">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" style="font-size:0.8rem;font-weight:600;">To</label>
+        <input type="date" name="date_to" value="{{ date_to }}" class="form-control"
+               style="background:var(--bg-card-2);border:1px solid var(--border);color:var(--text-primary);">
+      </div>
+      <div class="col-6 col-md-3 d-flex gap-2">
+        <button type="submit" class="btn-primary-custom w-100">
+          <i class="bi bi-search"></i> Filter
+        </button>
+        <a href="{{ url_for('admin.payments') }}" class="btn-outline-custom" style="text-decoration:none;">
+          <i class="bi bi-x"></i>
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Payments Table -->
+  <div class="dashboard-card">
+    <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
+      <i class="bi bi-list-ul" style="color:var(--primary);"></i>
+      All Payments
+      <span style="font-size:0.78rem;font-weight:500;color:var(--text-secondary);">({{ payments|length }} results)</span>
+    </h5>
+
+    {% if payments %}
+    <div class="table-responsive">
+      <table class="table mb-0" style="color:var(--text-primary);border-color:var(--border);">
+        <thead>
+          <tr style="background:var(--bg-card-2);font-size:0.74rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);">
+            <th style="border:none;padding:0.75rem 1rem;">Payment ID</th>
+            <th style="border:none;padding:0.75rem 0.8rem;">Order</th>
+            <th style="border:none;padding:0.75rem 0.8rem;">Customer</th>
+            <th style="border:none;padding:0.75rem 0.8rem;text-align:right;">Amount</th>
+            <th style="border:none;padding:0.75rem 0.8rem;text-align:center;">Status</th>
+            <th style="border:none;padding:0.75rem 0.8rem;">Method</th>
+            <th style="border:none;padding:0.75rem 0.8rem;">Date</th>
+            <th style="border:none;padding:0.75rem 0.8rem;text-align:center;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          {% set status_colors = {
+            'Paid':      ('rgba(16,185,129,0.15)', '#10b981', 'bi-check-circle-fill'),
+            'Pending':   ('rgba(245,158,11,0.15)', '#fbbf24', 'bi-hourglass-split'),
+            'Failed':    ('rgba(239,68,68,0.15)',  '#ef4444', 'bi-x-circle-fill'),
+            'Cancelled': ('rgba(107,114,128,0.15)','#6b7280', 'bi-slash-circle'),
+            'Refunded':  ('rgba(167,139,250,0.15)','#a78bfa', 'bi-arrow-counterclockwise'),
+          } %}
+          {% set bg, col, icon = status_colors.get(p.payment_status, ('rgba(255,255,255,0.05)', 'var(--text-secondary)', 'bi-question')) %}
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:0.85rem 1rem;border:none;font-size:0.82rem;">
+              <code style="color:var(--primary);">{{ p.razorpay_payment_id or '—' }}</code>
+            </td>
+            <td style="padding:0.85rem 0.8rem;border:none;">
+              <a href="{{ url_for('orders.order_detail', order_id=p.order_id) }}"
+                 style="color:var(--primary);text-decoration:none;font-weight:600;">
+                #{{ '%05d'|format(p.order_id) }}
+              </a>
+            </td>
+            <td style="padding:0.85rem 0.8rem;border:none;font-size:0.88rem;">
+              {{ p.order.user.name }}<br>
+              <span style="color:var(--text-muted);font-size:0.75rem;">{{ p.order.user.email }}</span>
+            </td>
+            <td style="padding:0.85rem 0.8rem;border:none;text-align:right;font-family:'Outfit',sans-serif;font-weight:700;">
+              ₹{{ "%.2f"|format(p.amount) }}
+            </td>
+            <td style="padding:0.85rem 0.8rem;border:none;text-align:center;">
+              <span style="background:{{ bg }};color:{{ col }};padding:0.25rem 0.75rem;
+                           border-radius:50px;font-size:0.75rem;font-weight:700;
+                           display:inline-flex;align-items:center;gap:0.3rem;">
+                <i class="bi {{ icon }}"></i> {{ p.payment_status }}
+              </span>
+            </td>
+            <td style="padding:0.85rem 0.8rem;border:none;font-size:0.82rem;color:var(--text-secondary);">
+              {{ p.payment_method or '—' }}
+            </td>
+            <td style="padding:0.85rem 0.8rem;border:none;font-size:0.8rem;color:var(--text-secondary);">
+              {{ p.created_at.strftime('%d %b %Y') }}<br>
+              <span style="color:var(--text-muted);">{{ p.created_at.strftime('%I:%M %p') }}</span>
+            </td>
+            <td style="padding:0.85rem 0.8rem;border:none;text-align:center;">
+              {% if p.payment_status == PaymentStatus.PAID.value %}
+              <form method="POST" action="{{ url_for('admin.refund_payment', payment_id=p.id) }}"
+                    onsubmit="return confirm('Mark this payment as refunded and cancel the order?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm" style="background:rgba(167,139,250,0.15);
+                        color:#a78bfa;border:1px solid rgba(167,139,250,0.3);border-radius:8px;
+                        font-size:0.75rem;padding:0.3rem 0.8rem;">
+                  <i class="bi bi-arrow-counterclockwise"></i> Refund
+                </button>
+              </form>
+              {% else %}
+              <span style="color:var(--text-muted);font-size:0.78rem;">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:3rem;color:var(--text-secondary);">
+      <i class="bi bi-credit-card" style="font-size:3rem;opacity:0.3;"></i>
+      <p style="margin-top:1rem;">No payments found matching your filters.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

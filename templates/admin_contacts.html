@@ -79,6 +79,7 @@
         <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
           {% if not msg.is_read %}
           <form action="{{ url_for('admin.contact_mark_read', contact_id=msg.id) }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-outline-custom"
                     style="font-size:0.78rem;padding:5px 12px;width:100%;">
               <i class="bi bi-check2-all"></i> Mark Read
@@ -91,6 +92,7 @@
           </a>
           <form action="{{ url_for('admin.contact_delete', contact_id=msg.id) }}" method="POST"
                 onsubmit="return confirm('Delete this message?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-outline-custom"
                     style="font-size:0.78rem;padding:5px 12px;border-color:#ef4444;color:#ef4444;width:100%;">
               <i class="bi bi-trash"></i> Delete

@@ -16,7 +16,7 @@ from decimal import Decimal
 from app import db
 from app.models import (
     User, Product, Order, OrderItem, OrderStatus,
-    Review, Coupon, Contact, OrderStatusHistory,
+    Review, Coupon, Contact, OrderStatusHistory, Payment, PaymentStatus,
 )
 from app.helpers.email_helper import send_order_delivered_email
 
@@ -550,3 +550,92 @@ def contact_delete(contact_id):
 def analytics():
     """Detailed sales analytics page."""
     return redirect(url_for("admin.dashboard"))
+
+
+# ── Admin: Payment Dashboard ──────────────────────────────────────────────────
+
+@admin_bp.route("/payments")
+@login_required
+@admin_required
+def payments():
+    """Admin payments overview with filters."""
+    status_filter   = request.args.get("status", "")
+    search_query    = request.args.get("q", "").strip()
+    date_from_str   = request.args.get("date_from", "")
+    date_to_str     = request.args.get("date_to", "")
+
+    query = Payment.query.join(Order).join(User, Order.user_id == User.id)
+
+    if status_filter:
+        query = query.filter(Payment.payment_status == status_filter)
+    if search_query:
+        query = query.filter(
+            db.or_(
+                User.name.ilike(f"%{search_query}%"),
+                User.email.ilike(f"%{search_query}%"),
+                Payment.razorpay_payment_id.ilike(f"%{search_query}%"),
+            )
+        )
+    if date_from_str:
+        try:
+            date_from = datetime.strptime(date_from_str, "%Y-%m-%d")
+            query = query.filter(Payment.created_at >= date_from)
+        except ValueError:
+            pass
+    if date_to_str:
+        try:
+            date_to = datetime.strptime(date_to_str, "%Y-%m-%d") + timedelta(days=1)
+            query = query.filter(Payment.created_at < date_to)
+        except ValueError:
+            pass
+
+    all_payments = query.order_by(Payment.created_at.desc()).all()
+
+    # ── Metrics ───────────────────────────────────────────────────
+    today = datetime.utcnow().date()
+    total_payments   = Payment.query.count()
+    today_payments   = Payment.query.filter(
+        func.date(Payment.created_at) == today
+    ).count()
+    successful       = Payment.query.filter_by(payment_status=PaymentStatus.PAID.value).count()
+    failed           = Payment.query.filter_by(payment_status=PaymentStatus.FAILED.value).count()
+    pending          = Payment.query.filter_by(payment_status=PaymentStatus.PENDING.value).count()
+    total_revenue    = db.session.query(
+        func.sum(Payment.amount)
+    ).filter_by(payment_status=PaymentStatus.PAID.value).scalar() or 0
+
+    return render_template(
+        "admin_payments.html",
+        payments=all_payments,
+        total_payments=total_payments,
+        today_payments=today_payments,
+        successful=successful,
+        failed=failed,
+        pending=pending,
+        total_revenue=total_revenue,
+        status_filter=status_filter,
+        search_query=search_query,
+        date_from=date_from_str,
+        date_to=date_to_str,
+        PaymentStatus=PaymentStatus,
+    )
+
+
+@admin_bp.route("/payments/<int:payment_id>/refund", methods=["POST"])
+@login_required
+@admin_required
+def refund_payment(payment_id):
+    """Mark a payment as refunded and update the order status."""
+    payment = Payment.query.get_or_404(payment_id)
+    payment.payment_status = PaymentStatus.REFUNDED.value
+    payment.order.status   = OrderStatus.CANCELLED.value
+
+    history = OrderStatusHistory(
+        order_id = payment.order_id,
+        status   = OrderStatus.CANCELLED.value,
+        note     = f"Refund issued by admin. Payment {payment.razorpay_payment_id}",
+    )
+    db.session.add(history)
+    db.session.commit()
+    flash(f"Payment {payment_id} marked as refunded and order cancelled.", "success")
+    return redirect(url_for("admin.payments"))

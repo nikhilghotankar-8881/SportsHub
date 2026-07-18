@@ -4,13 +4,17 @@ Handles checkout flow with coupon support, GST, stock management.
 """
 from flask import (
     Blueprint, render_template, redirect, url_for,
-    flash, request, session,
+    flash, request, session, current_app,
 )
 from flask_login import login_required, current_user
 from decimal import Decimal
 
 from app import db
-from app.models import Order, OrderItem, CartItem, Coupon, OrderStatusHistory, Promotion, PromotionCategory, PromotionProduct
+from app.models import (
+    Order, OrderItem, CartItem, Coupon, OrderStatusHistory,
+    Promotion, PromotionCategory, PromotionProduct, OrderStatus,
+    Payment, PaymentStatus
+)
 from app.helpers.email_helper import (
     send_order_confirmation_email, send_coupon_applied_email
 )
@@ -103,6 +107,7 @@ def checkout():
         address = request.form.get("address", "").strip()
         city    = request.form.get("city",    "").strip()
         phone   = request.form.get("phone",   "").strip()
+        payment_method = request.form.get("payment_method", "razorpay")
 
         errors = []
         if not name:    errors.append("Full name is required.")
@@ -141,7 +146,7 @@ def checkout():
         try:
             order = Order(
                 user_id          = current_user.id,
-                status           = "placed",
+                status           = OrderStatus.PENDING.value,
                 total_amount     = total,
                 discount_amount  = total_discount,
                 coupon_code      = coupon_code,
@@ -154,7 +159,7 @@ def checkout():
             db.session.add(order)
             db.session.flush()  # get order.id
 
-            # ── Create OrderItems + deduct stock ──────────────────
+            # ── Create OrderItems ─────────────────────────────────
             for item in items:
                 order_item = OrderItem(
                     order_id   = order.id,
@@ -163,50 +168,103 @@ def checkout():
                     unit_price = Decimal(str(item.product.effective_price)),
                 )
                 db.session.add(order_item)
-                item.product.stock -= item.quantity
 
             # ── Initial status history entry ──────────────────────
             history = OrderStatusHistory(
                 order_id = order.id,
-                status   = "placed",
-                note     = "Order placed successfully.",
+                status   = OrderStatus.PENDING.value,
+                note     = "Order initiated, pending payment.",
             )
             db.session.add(history)
 
-            # ── Increment coupon usage ────────────────────────────
-            coupon_obj = None
-            if coupon_code:
-                coupon_obj = Coupon.query.filter_by(code=coupon_code).first()
-                if coupon_obj:
-                    coupon_obj.used_count += 1
 
-            # ── Clear cart ────────────────────────────────────────
-            for item in items:
-                db.session.delete(item)
+            if payment_method == "cod":
+                # ── Cash on Delivery Flow ─────────────────────────────
+                order.status = OrderStatus.PLACED.value
+                
+                payment = Payment(
+                    order_id=order.id,
+                    amount=total,
+                    currency="INR",
+                    payment_method="Cash on Delivery",
+                    payment_status=PaymentStatus.PENDING.value
+                )
+                db.session.add(payment)
+                
+                # Reduce stock for all items
+                for item in items:
+                    if item.product.stock >= item.quantity:
+                        item.product.stock -= item.quantity
+                    else:
+                        item.product.stock = 0
 
-            db.session.commit()
-        except Exception:
+                # Clear user's cart
+                for cart_item in current_user.cart_items:
+                    db.session.delete(cart_item)
+
+                # Increase coupon usage if applicable
+                if order.coupon_code:
+                    coupon = Coupon.query.filter_by(code=order.coupon_code).first()
+                    if coupon:
+                        coupon.used_count += 1
+
+                db.session.commit()
+
+                # Clear coupon session data
+                session.pop("coupon_code", None)
+                session.pop("coupon_discount", None)
+
+                # Send confirmation email (graceful fallback)
+                try:
+                    send_order_confirmation_email(order.user, order)
+                except Exception:
+                    pass
+                
+                flash("Order placed successfully via Cash on Delivery!", "success")
+                return redirect(url_for("checkout.order_confirmation", order_id=order.id))
+            else:
+                # ── Razorpay Online Payment Flow ──────────────────────
+                from app.routes.payment_routes import get_razorpay_client
+                
+                key_id = current_app.config.get("RAZORPAY_KEY_ID")
+                key_secret = current_app.config.get("RAZORPAY_KEY_SECRET")
+                
+                if not key_id or not key_secret:
+                    raise Exception("Razorpay API keys are not configured. Please contact support or select Cash on Delivery.")
+
+                client = get_razorpay_client()
+                amount_in_paise = int(float(total) * 100)
+                
+                rzp_order = client.order.create({
+                    "amount": amount_in_paise,
+                    "currency": "INR",
+                    "receipt": f"receipt_order_{order.id}"
+                })
+
+                # ── Create Payment Record ─────────────────────────────
+                payment = Payment(
+                    order_id=order.id,
+                    razorpay_order_id=rzp_order["id"],
+                    amount=total,
+                    currency="INR",
+                    payment_method="Razorpay",
+                    payment_status=PaymentStatus.PENDING.value
+                )
+                db.session.add(payment)
+
+                db.session.commit()
+                
+                return render_template(
+                    "payment.html",
+                    order=order,
+                    payment=payment,
+                    key_id=key_id,
+                    amount_in_paise=amount_in_paise,
+                )
+        except Exception as e:
             db.session.rollback()
-            flash("An error occurred while placing your order. Please try again.", "danger")
+            flash(f"An error occurred while initiating your order: {str(e)}", "danger")
             return redirect(url_for("checkout.checkout"))
-
-        # ── Clear coupon session ──────────────────────────────
-        session.pop("coupon_code", None)
-        session.pop("coupon_discount", None)
-
-        # ── Send emails (graceful fallback) ───────────────────
-        try:
-            send_order_confirmation_email(current_user, order)
-            if coupon_obj and float(discount) > 0:
-                send_coupon_applied_email(current_user, order, coupon_obj)
-        except Exception:
-            pass
-
-        flash(
-            f"Order #{order.id} placed successfully! Thank you, {current_user.name}.",
-            "success",
-        )
-        return redirect(url_for("checkout.order_confirmation", order_id=order.id))
 
     return render_template(
         "checkout.html",

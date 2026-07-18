@@ -21,6 +21,14 @@ class OrderStatus(str, enum.Enum):
     PROCESSING      = "processing"
 
 
+class PaymentStatus(str, enum.Enum):
+    PENDING   = "Pending"
+    PAID      = "Paid"
+    FAILED    = "Failed"
+    CANCELLED = "Cancelled"
+    REFUNDED  = "Refunded"
+
+
 class CouponType(str, enum.Enum):
     PERCENTAGE = "percentage"
     FIXED      = "fixed"
@@ -265,6 +273,12 @@ class Order(db.Model):
         lazy="dynamic",
         order_by="OrderStatusHistory.changed_at.asc()",
     )
+    payment = db.relationship(
+        "Payment",
+        back_populates="order",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
     @property
     def subtotal_amount(self):
@@ -351,19 +365,20 @@ class OrderStatusHistory(db.Model):
 
 
 class OrderItem(db.Model):
-    """One row per product line in an Order — price is frozen at order time."""
-
     __tablename__ = "order_items"
 
     id         = db.Column(db.Integer, primary_key=True)
-    order_id   = db.Column(db.Integer, db.ForeignKey("orders.id"),   nullable=False)
+    order_id   = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
-    quantity   = db.Column(db.Integer, nullable=False)
-    unit_price = db.Column(db.Numeric(10, 2), nullable=False)   # price snapshot
+    quantity   = db.Column(db.Integer, nullable=False, default=1)
+    unit_price = db.Column(db.Numeric(12, 2), nullable=False)
 
-    # Relationships
     order   = db.relationship("Order",   back_populates="order_items")
     product = db.relationship("Product", back_populates="order_items")
+
+    @property
+    def subtotal(self):
+        return self.unit_price * self.quantity
 
     @property
     def line_total(self):
@@ -602,3 +617,20 @@ class Contact(db.Model):
 
     def __repr__(self):
         return f"<Contact {self.email} '{self.subject}'>"
+
+class Payment(db.Model):
+    __tablename__ = "payments"
+
+    id                  = db.Column(db.Integer, primary_key=True)
+    order_id            = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
+    razorpay_order_id   = db.Column(db.String(255), nullable=True, index=True)
+    razorpay_payment_id = db.Column(db.String(255), nullable=True)
+    payment_signature   = db.Column(db.String(255), nullable=True)
+    amount              = db.Column(db.Numeric(12, 2), nullable=False)
+    currency            = db.Column(db.String(10), nullable=False, default="INR")
+    payment_method      = db.Column(db.String(50), nullable=True)
+    payment_status      = db.Column(db.String(50), nullable=False, default=PaymentStatus.PENDING.value)
+    created_at          = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at          = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    order = db.relationship("Order", back_populates="payment")

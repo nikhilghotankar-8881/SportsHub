@@ -275,7 +275,7 @@ def generate_invoice_pdf(order) -> bytes:
     elements.append(HRFlowable(width="100%", thickness=0.5, color=BORDER))
     elements.append(Spacer(1, 3 * mm))
     elements.append(Paragraph(
-        "Thank you for shopping with SportsHub! For any queries, contact us at support@sportshub.com",
+        "Thank you for shopping with SportsHub! For any queries, contact us at nikhilghotankar@gmail.com",
         ParagraphStyle("Footer", fontSize=8, textColor=GREY, alignment=TA_CENTER),
     ))
     elements.append(Paragraph(

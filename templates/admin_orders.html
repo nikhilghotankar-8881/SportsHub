@@ -68,6 +68,7 @@
             <td style="padding:12px 8px;">
               <form action="{{ url_for('admin.order_update_status', order_id=order.id) }}"
                     method="POST" style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <select name="status" style="background:var(--bg-card-2);border:1px solid var(--border);
                                              color:var(--text-primary);border-radius:6px;padding:4px 8px;
                                              font-size:0.8rem;outline:none;">

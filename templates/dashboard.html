@@ -158,5 +158,93 @@
     </div>
   </div>
 
+  <!-- Payment History -->
+  <div class="row g-4 mt-1">
+    <div class="col-12">
+      <div class="dashboard-card">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin:0;">
+            <i class="bi bi-credit-card-2-front" style="color:var(--primary);"></i> Payment History
+          </h5>
+        </div>
+
+        {% set user_payments = [] %}
+        {% for order in current_user.orders.all() %}
+          {% if order.payment %}
+            {% set _ = user_payments.append(order.payment) %}
+          {% endif %}
+        {% endfor %}
+
+        {% if user_payments %}
+        <div class="table-responsive">
+          <table class="table custom-table align-middle">
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>Order</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in user_payments | sort(attribute='created_at', reverse=true) | list %}
+              <tr>
+                <td>
+                  <code style="font-size:0.78rem;color:var(--primary);">
+                    {{ p.razorpay_payment_id[:20] ~ '…' if p.razorpay_payment_id and p.razorpay_payment_id|length > 20 else (p.razorpay_payment_id or '—') }}
+                  </code>
+                </td>
+                <td><strong>#{{ '%05d'|format(p.order_id) }}</strong></td>
+                <td><strong>₹{{ "%.2f"|format(p.amount) }}</strong></td>
+                <td>
+                  {% if p.payment_status == 'Paid' %}
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success">
+                      <i class="bi bi-check-circle-fill me-1"></i>Paid
+                    </span>
+                  {% elif p.payment_status == 'Pending' %}
+                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning">
+                      <i class="bi bi-hourglass-split me-1"></i>Pending
+                    </span>
+                  {% elif p.payment_status == 'Failed' %}
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">
+                      <i class="bi bi-x-circle-fill me-1"></i>Failed
+                    </span>
+                  {% elif p.payment_status == 'Refunded' %}
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">
+                      <i class="bi bi-arrow-counterclockwise me-1"></i>Refunded
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">
+                      {{ p.payment_status }}
+                    </span>
+                  {% endif %}
+                </td>
+                <td>{{ p.payment_method or '—' }}</td>
+                <td style="font-size:0.85rem;">{{ p.created_at.strftime('%d %b %Y') }}</td>
+                <td class="text-end">
+                  <a href="{{ url_for('orders.order_detail', order_id=p.order_id) }}"
+                     class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye"></i> View
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-credit-card" style="font-size:2rem;"></i>
+          <p class="mt-2 mb-0">No payment history yet.</p>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

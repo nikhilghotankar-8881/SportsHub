@@ -17,6 +17,7 @@
 
     <!-- Edit Profile Form -->
     <form method="POST" action="{{ url_for('main.edit_profile') }}" novalidate id="edit-profile-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {{ form.hidden_tag() }}
 
       <!-- Full Name -->

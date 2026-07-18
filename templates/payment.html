@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Complete Payment – SportsHub{% endblock %}
+
+{% block extra_head %}
+<style>
+@keyframes pulseRing {
+  0%   { transform: scale(0.8); opacity: 0.7; }
+  50%  { transform: scale(1.1); opacity: 0.3; }
+  100% { transform: scale(0.8); opacity: 0.7; }
+}
+.pay-icon-ring {
+  animation: pulseRing 2s ease-in-out infinite;
+}
+.payment-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.order-row:last-child { border-bottom: none; }
+.order-row .label { color: var(--text-secondary); }
+.order-row .value { font-weight: 600; }
+#pay-btn {
+  width: 100%; padding: 1rem; font-size: 1.05rem; font-weight: 700;
+  background: var(--gradient-primary); color: #fff;
+  border: none; border-radius: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  transition: opacity 0.2s, transform 0.2s;
+}
+#pay-btn:hover   { opacity: 0.9; transform: translateY(-1px); }
+#pay-btn:active  { transform: translateY(0); }
+#pay-btn:disabled{ opacity: 0.6; cursor: not-allowed; }
+#spinner { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper" style="max-width: 580px;">
+
+  <!-- Header -->
+  <div style="text-align:center; padding: 2rem 1rem 1.5rem;">
+    <div style="position:relative; width:80px; height:80px; margin:0 auto 1rem;">
+      <div class="pay-icon-ring" style="position:absolute;inset:0;border-radius:50%;
+           background:rgba(92,107,192,0.15);border:2px solid rgba(92,107,192,0.3);"></div>
+      <div style="position:relative;width:80px;height:80px;border-radius:50%;
+                  background:rgba(92,107,192,0.12);display:flex;align-items:center;
+                  justify-content:center;font-size:2rem;color:var(--primary);">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+    </div>
+    <h1 style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:0.3rem;">
+      Secure Payment
+    </h1>
+    <p style="color:var(--text-secondary);font-size:0.9rem;">
+      Order <strong style="color:var(--primary);">#{{ '%05d'|format(order.id) }}</strong>
+      &nbsp;·&nbsp; Powered by Razorpay
+    </p>
+  </div>
+
+  <!-- Order Summary -->
+  <div class="payment-card">
+    <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;">
+      <i class="bi bi-receipt" style="color:var(--primary);"></i> Order Summary
+    </h5>
+    {% for item in order.order_items %}
+    <div class="order-row">
+      <span class="label">{{ item.product.name }} × {{ item.quantity }}</span>
+      <span class="value">₹{{ "%.2f"|format(item.subtotal) }}</span>
+    </div>
+    {% endfor %}
+    {% if order.discount_amount and order.discount_amount > 0 %}
+    <div class="order-row">
+      <span class="label" style="color:var(--success);">
+        Coupon{% if order.coupon_code %} ({{ order.coupon_code }}){% endif %}
+      </span>
+      <span class="value" style="color:var(--success);">-₹{{ "%.2f"|format(order.discount_amount) }}</span>
+    </div>
+    {% endif %}
+    {% if order.gst_amount and order.gst_amount > 0 %}
+    <div class="order-row">
+      <span class="label">GST (18%)</span>
+      <span class="value">₹{{ "%.2f"|format(order.gst_amount) }}</span>
+    </div>
+    {% endif %}
+    <div class="order-row" style="border-top:2px solid var(--border);margin-top:0.5rem;padding-top:0.7rem;">
+      <span style="font-weight:700;font-size:1rem;">Total Payable</span>
+      <span style="font-family:'Outfit',sans-serif;font-size:1.3rem;font-weight:800;
+                   background:var(--gradient-accent);-webkit-background-clip:text;
+                   -webkit-text-fill-color:transparent;background-clip:text;">
+        ₹{{ "%.2f"|format(order.total_amount) }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Razorpay Trigger -->
+  <div class="payment-card" style="text-align:center;">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1.2rem;">
+      <i class="bi bi-lock-fill" style="color:var(--success);"></i>
+      256-bit SSL secured &nbsp;·&nbsp; No card data stored
+    </p>
+    <button id="pay-btn" onclick="initiatePayment()">
+      <span id="btn-text">
+        <i class="bi bi-credit-card-2-front-fill"></i>
+        Pay ₹{{ "%.2f"|format(order.total_amount) }}
+      </span>
+      <span id="spinner">
+        <span class="spinner-border spinner-border-sm"></span>
+        Processing…
+      </span>
+    </button>
+    <div style="margin-top:1.2rem;">
+      <a href="{{ url_for('cart.cart') }}" style="color:var(--text-secondary);font-size:0.82rem;
+         text-decoration:none;">
+        <i class="bi bi-arrow-left"></i> Back to Cart
+      </a>
+    </div>
+  </div>
+
+  <!-- Trust badges -->
+  <div style="display:flex;align-items:center;justify-content:center;gap:1.5rem;
+              flex-wrap:wrap;opacity:0.5;font-size:0.78rem;margin-top:0.5rem;">
+    <span><i class="bi bi-shield-check"></i> Secured by Razorpay</span>
+    <span><i class="bi bi-credit-card"></i> Cards / UPI / Wallets</span>
+    <span><i class="bi bi-bank"></i> Net Banking</span>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+function initiatePayment() {
+  const btn = document.getElementById('pay-btn');
+  document.getElementById('btn-text').style.display = 'none';
+  document.getElementById('spinner').style.display  = 'flex';
+  btn.disabled = true;
+
+  const options = {
+    key:         "{{ key_id }}",
+    amount:      {{ amount_in_paise }},
+    currency:    "INR",
+    name:        "SportsHub",
+    description: "Order #{{ '%05d'|format(order.id) }}",
+    order_id:    "{{ payment.razorpay_order_id }}",
+    handler: function(response) {
+      // Build a hidden form and submit
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = "{{ url_for('payment.verify_payment') }}";
+
+      const fields = {
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id:   response.razorpay_order_id,
+        razorpay_signature:  response.razorpay_signature,
+        csrf_token:          "{{ csrf_token() }}"
+      };
+
+      for (const [name, value] of Object.entries(fields)) {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = name;
+        input.value = value;
+        form.appendChild(input);
+      }
+      document.body.appendChild(form);
+      form.submit();
+    },
+    prefill: {
+      name:    "{{ order.shipping_name }}",
+      contact: "{{ order.shipping_phone }}"
+    },
+    theme:  { color: "#5c6bc0" },
+    modal: {
+      ondismiss: function() {
+        // User closed the Razorpay popup without paying
+        document.getElementById('btn-text').style.display = 'flex';
+        document.getElementById('spinner').style.display  = 'none';
+        btn.disabled = false;
+        alert('Payment cancelled. You can try again.');
+      }
+    }
+  };
+
+  const rzp = new Razorpay(options);
+  rzp.on('payment.failed', function(response) {
+    alert('Payment failed: ' + response.error.description + '. Please try again.');
+    document.getElementById('btn-text').style.display = 'flex';
+    document.getElementById('spinner').style.display  = 'none';
+    btn.disabled = false;
+  });
+  rzp.open();
+}
+</script>
+{% endblock %}

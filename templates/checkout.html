@@ -27,6 +27,8 @@
         <form method="POST" action="{{ url_for('checkout.checkout') }}"
               id="checkout-form" novalidate>
 
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
           <!-- Full Name -->
           <div class="form-group">
             <label class="form-label" for="name">
@@ -68,27 +70,40 @@
             <input type="text" id="city" name="city"
                    class="form-control-custom"
                    value="{{ form_data.get('city', '') }}"
-                   placeholder="Mumbai" required />
+                   placeholder="e.g. Chhatrapati Sambhajinagar" required />
           </div>
 
           <hr style="border-color:var(--border);margin:1.5rem 0;" />
 
-          <!-- Payment notice -->
-          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);
-                      border-radius:var(--radius);padding:1rem 1.2rem;margin-bottom:1.5rem;
-                      display:flex;align-items:center;gap:0.75rem;">
-            <i class="bi bi-shield-lock-fill" style="color:var(--success);font-size:1.4rem;"></i>
-            <div>
-              <strong style="font-size:0.9rem;color:var(--text-primary);">Cash on Delivery</strong>
-              <p style="color:var(--text-secondary);font-size:0.82rem;margin:0;">
-                Pay when your order arrives. No advance payment required.
-              </p>
-            </div>
+          <!-- Payment Method Selection -->
+          <h6 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:1rem;margin-top:1.5rem;">
+            <i class="bi bi-credit-card-fill" style="color:var(--primary);"></i> Payment Method
+          </h6>
+          
+          <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem;">
+            <!-- Razorpay Option -->
+            <label style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;border:2px solid var(--primary);border-radius:var(--radius);cursor:pointer;background:rgba(92,107,192,0.05);transition:all 0.2s;" id="label-razorpay">
+              <input type="radio" name="payment_method" value="razorpay" checked style="margin-top:0.2rem;" onchange="updatePaymentMethodUI()">
+              <div>
+                <strong style="display:block;font-size:0.95rem;color:var(--text-primary);margin-bottom:0.2rem;">Razorpay (Cards / UPI / NetBanking)</strong>
+                <span style="font-size:0.82rem;color:var(--text-secondary);">Secure online payment via Razorpay.</span>
+              </div>
+            </label>
+
+            <!-- COD Option -->
+            <label style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--bg-card);transition:all 0.2s;" id="label-cod">
+              <input type="radio" name="payment_method" value="cod" style="margin-top:0.2rem;" onchange="updatePaymentMethodUI()">
+              <div>
+                <strong style="display:block;font-size:0.95rem;color:var(--text-primary);margin-bottom:0.2rem;">Cash on Delivery</strong>
+                <span style="font-size:0.82rem;color:var(--text-secondary);">Pay when your order arrives. No advance payment required.</span>
+              </div>
+            </label>
           </div>
 
           <!-- Submit -->
-          <button type="submit" class="btn-submit" id="place-order-btn">
-            <i class="bi bi-bag-check-fill"></i> Place Order &nbsp;·&nbsp; ₹{{ "%.2f"|format(total) }}
+          <button type="submit" class="btn-submit" id="place-order-btn" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+            <span id="place-order-text"><i class="bi bi-bag-check-fill"></i> Proceed to Pay &nbsp;·&nbsp; ₹{{ "%.2f"|format(total) }}</span>
+            <span id="place-order-spinner" style="display:none;" class="spinner-border spinner-border-sm"></span>
           </button>
 
         </form>
@@ -151,6 +166,7 @@
               </span>
               <span style="color:var(--success);font-size:0.82rem;">You saved ₹{{ "%.2f"|format(discount) }}!</span>
               <form action="{{ url_for('coupon.remove_coupon') }}" method="POST" style="margin-left:auto;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" style="background:none;border:none;color:var(--text-muted);
                                              font-size:0.75rem;cursor:pointer;padding:0;">
                   <i class="bi bi-x-circle"></i> Remove
@@ -236,7 +252,10 @@ function applyCoupon() {
 
   fetch('{{ url_for("coupon.apply_coupon") }}', {
     method: 'POST',
-    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
     body: formData
   })
   .then(r => r.json())
@@ -259,6 +278,38 @@ function showCouponMsg(msg, type) {
 
 document.getElementById('coupon_input') && document.getElementById('coupon_input').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); }
+});
+
+function updatePaymentMethodUI() {
+  const isCod = document.querySelector('input[name="payment_method"]:checked').value === 'cod';
+  const labelRazorpay = document.getElementById('label-razorpay');
+  const labelCod = document.getElementById('label-cod');
+  const btnText = document.getElementById('place-order-text');
+  const total = '₹{{ "%.2f"|format(total) }}';
+
+  if (isCod) {
+    labelCod.style.border = '2px solid var(--success)';
+    labelCod.style.background = 'rgba(16,185,129,0.05)';
+    labelRazorpay.style.border = '1px solid var(--border)';
+    labelRazorpay.style.background = 'var(--bg-card)';
+    btnText.innerHTML = `<i class="bi bi-bag-check-fill"></i> Place Order &nbsp;·&nbsp; ${total}`;
+  } else {
+    labelRazorpay.style.border = '2px solid var(--primary)';
+    labelRazorpay.style.background = 'rgba(92,107,192,0.05)';
+    labelCod.style.border = '1px solid var(--border)';
+    labelCod.style.background = 'var(--bg-card)';
+    btnText.innerHTML = `<i class="bi bi-credit-card-fill"></i> Proceed to Pay &nbsp;·&nbsp; ${total}`;
+  }
+}
+
+document.getElementById('checkout-form').addEventListener('submit', function(e) {
+  const btn = document.getElementById('place-order-btn');
+  const text = document.getElementById('place-order-text');
+  const spinner = document.getElementById('place-order-spinner');
+  
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  spinner.style.display = 'inline-block';
 });
 </script>
 {% endblock %}

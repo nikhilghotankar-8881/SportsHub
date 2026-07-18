@@ -41,6 +41,7 @@
           <td>
             <a href="{{ url_for('flashsale.edit_flashsale', fs_id=fs.id) }}" class="btn btn-sm btn-outline-custom"><i class="bi bi-pencil"></i></a>
             <form method="POST" action="{{ url_for('flashsale.delete_flashsale', fs_id=fs.id) }}" style="display:inline;" onsubmit="return confirm('Delete flash sale?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
             </form>
           </td>

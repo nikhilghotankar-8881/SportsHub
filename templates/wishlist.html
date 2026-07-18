@@ -34,12 +34,14 @@
           </a>
           <div class="product-footer d-flex justify-content-between align-items-center">
             <form action="{{ url_for('wishlist.remove', product_id=item.product.id) }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove from wishlist">
                 <i class="bi bi-trash"></i>
               </button>
             </form>
             {% if item.product.in_stock %}
               <form action="{{ url_for('cart.add', product_id=item.product.id) }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="quantity" value="1">
                 <button type="submit" class="btn-accent-custom" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
                   <i class="bi bi-cart-plus"></i> Add to Cart

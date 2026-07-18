@@ -4,13 +4,15 @@ SportsHub is a Flask-based sports equipment e-commerce platform.
 
 ## Features
 
-- User Authentication
-- Product Catalog
-- Shopping Cart
-- Checkout
-- Order Management
-- Admin Dashboard
-- Responsive Bootstrap UI
+- User Authentication & Authorization
+- Comprehensive Product Catalog
+- Shopping Cart & Checkout System
+- **Payment Integration**: Razorpay Online Payments & Cash on Delivery (COD)
+- **Promotions**: Discount Coupons & Flash Sales
+- Order Management with Automated Email Confirmations
+- PDF Invoice Generation
+- Advanced Admin Dashboard
+- Responsive & Modern UI built with Bootstrap 5
 
 ## Tech Stack
 

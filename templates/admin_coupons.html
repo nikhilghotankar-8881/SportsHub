@@ -76,6 +76,7 @@
                   <i class="bi bi-pencil"></i>
                 </a>
                 <form action="{{ url_for('coupon.admin_toggle', coupon_id=coupon.id) }}" method="POST" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn-outline-custom"
                           style="font-size:0.75rem;padding:4px 10px;cursor:pointer;">
                     <i class="bi bi-{% if coupon.is_active %}pause{% else %}play{% endif %}"></i>
@@ -83,6 +84,7 @@
                 </form>
                 <form action="{{ url_for('coupon.admin_delete', coupon_id=coupon.id) }}" method="POST"
                       onsubmit="return confirm('Delete coupon {{ coupon.code }}?');" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn-outline-custom"
                           style="font-size:0.75rem;padding:4px 10px;border-color:#ef4444;color:#ef4444;cursor:pointer;">
                     <i class="bi bi-trash"></i>

@@ -169,6 +169,39 @@
     </p>
   </div>
 
+  <!-- ── Payment Details ── -->
+  {% if order.payment %}
+  <div class="dashboard-card" style="margin-bottom:1.5rem;">
+    <h6 style="font-weight:700;margin-bottom:1rem;">
+      <i class="bi bi-credit-card-2-front" style="color:var(--primary);"></i> Payment Information
+    </h6>
+    <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.88rem;">
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-secondary);">Payment Status</span>
+        <span style="font-weight:700;color:{% if order.payment.payment_status == 'Paid' %}var(--success){% elif order.payment.payment_status == 'Failed' %}#ef4444{% else %}#fbbf24{% endif %};">
+          {{ order.payment.payment_status }}
+        </span>
+      </div>
+      {% if order.payment.razorpay_payment_id %}
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-secondary);">Payment ID</span>
+        <code style="font-size:0.8rem;color:var(--primary);">{{ order.payment.razorpay_payment_id }}</code>
+      </div>
+      {% endif %}
+      {% if order.payment.payment_method %}
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-secondary);">Method</span>
+        <span style="font-weight:600;">{{ order.payment.payment_method }}</span>
+      </div>
+      {% endif %}
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-secondary);">Transaction Time</span>
+        <span>{{ order.payment.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- ── Actions ── -->
   <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
     <a href="{{ url_for('orders.order_detail', order_id=order.id) }}"

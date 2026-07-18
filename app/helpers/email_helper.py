@@ -45,7 +45,7 @@ def send_registration_email(user):
         <p style="color:#555;">Your account has been created successfully. Start exploring our premium sports gear!</p>
         <p style="color:#555;">Email: <strong>{user.email}</strong></p>
         <a href="#" style="background:#667eea;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:16px;">Shop Now</a>
-        <p style="color:#999;font-size:12px;margin-top:24px;">© 2025 SportsHub. All rights reserved.</p>
+        <p style="color:#999;font-size:12px;margin-top:24px;">© 2026 SportsHub. All rights reserved.</p>
       </div>
     </div>
     """
@@ -92,8 +92,9 @@ def send_order_confirmation_email(user, order):
             <td style='text-align:right;padding:8px;font-weight:bold;'>₹{order.total_amount:,.2f}</td></tr>
           </tfoot>
         </table>
-        <p style="color:#555;margin-top:16px;">Shipping to: {order.shipping_name}, {order.shipping_address}, {order.shipping_city}</p>
-        <p style="color:#999;font-size:12px;margin-top:24px;">© 2025 SportsHub. All rights reserved.</p>
+        <p style="color:#555;margin-top:16px;"><strong>Payment Method:</strong> {order.payment.payment_method if order.payment else 'Online Payment'}</p>
+        <p style="color:#555;margin-top:8px;">Shipping to: {order.shipping_name}, {order.shipping_address}, {order.shipping_city}</p>
+        <p style="color:#999;font-size:12px;margin-top:24px;">© 2026 SportsHub. All rights reserved.</p>
       </div>
     </div>
     """
@@ -115,7 +116,7 @@ def send_password_change_email(user):
         <h2>Hi {user.name},</h2>
         <p style="color:#555;">Your password was changed successfully. If you did not make this change, please contact our support immediately.</p>
         <p style="color:#555;">📧 {user.email}</p>
-        <p style="color:#999;font-size:12px;margin-top:24px;">© 2025 SportsHub. All rights reserved.</p>
+        <p style="color:#999;font-size:12px;margin-top:24px;">© 2026 SportsHub. All rights reserved.</p>
       </div>
     </div>
     """
@@ -137,7 +138,7 @@ def send_order_delivered_email(user, order):
         <h2>Hi {user.name},</h2>
         <p style="color:#555;">Great news! Your order <strong>#{order.id}</strong> has been delivered successfully.</p>
         <p style="color:#555;">We hope you love your sports gear! Don't forget to leave a review.</p>
-        <p style="color:#999;font-size:12px;margin-top:24px;">© 2025 SportsHub. All rights reserved.</p>
+        <p style="color:#999;font-size:12px;margin-top:24px;">© 2026 SportsHub. All rights reserved.</p>
       </div>
     </div>
     """
@@ -159,7 +160,7 @@ def send_coupon_applied_email(user, order, coupon):
         <h2>Hi {user.name},</h2>
         <p style="color:#555;">Your coupon <strong>{coupon.code}</strong> was applied to Order #{order.id}.</p>
         <p style="color:#555;">You saved <strong>₹{order.discount_amount:,.2f}</strong>!</p>
-        <p style="color:#999;font-size:12px;margin-top:24px;">© 2025 SportsHub. All rights reserved.</p>
+        <p style="color:#999;font-size:12px;margin-top:24px;">© 2026 SportsHub. All rights reserved.</p>
       </div>
     </div>
     """

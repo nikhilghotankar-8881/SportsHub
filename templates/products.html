@@ -161,12 +161,14 @@
                     {% if current_user.is_authenticated %}
                       {% if in_wishlist %}
                         <form method="POST" action="{{ url_for('wishlist.remove', product_id=product.id) }}" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                           <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--accent);">
                             <i class="bi bi-heart-fill"></i>
                           </button>
                         </form>
                       {% else %}
                         <form method="POST" action="{{ url_for('wishlist.add', product_id=product.id) }}" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                           <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
                             <i class="bi bi-heart"></i>
                           </button>
@@ -206,6 +208,7 @@
                             action="{{ url_for('cart.add', product_id=product.id) }}"
                             id="cart-form-{{ product.id }}"
                             style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="quantity" value="1" />
                         <button type="submit"
                                 class="btn-accent-custom"
