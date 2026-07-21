@@ -69,12 +69,25 @@ cp .env.example .env
 flask db upgrade
 ```
 
-### 6. Start the Development Server
+### 6. Running the Application
+
+**Local Flask development (Windows/Mac/Linux):**
 ```bash
 python run.py
 ```
+*(Runs on http://127.0.0.1:5000)*
 
-The app will be available at `http://127.0.0.1:5000`
+**Windows production-like testing (using Waitress):**
+```bash
+waitress-serve --listen=127.0.0.1:8000 run:app
+```
+*(Runs on http://127.0.0.1:8000)*
+
+**Render/Linux production (using Gunicorn):**
+```bash
+gunicorn run:app
+```
+*(Used internally by Render during deployment)*
 
 ---
 
