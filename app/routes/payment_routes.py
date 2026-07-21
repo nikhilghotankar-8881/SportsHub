@@ -85,8 +85,9 @@ def verify_payment():
 
     # Send confirmation email (graceful fallback)
     try:
-        from app.helpers.email_helper import send_order_confirmation_email
+        from app.helpers.email_helper import send_order_confirmation_email, send_payment_success_email
         send_order_confirmation_email(order.user, order)
+        send_payment_success_email(order.user, order, payment)
     except Exception:
         pass
 

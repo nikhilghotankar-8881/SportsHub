@@ -1,0 +1,12 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+<h2 style="color: #212529; margin-top: 0;">Hi {{ user.name }},</h2>
+<p>Your order <strong>#{{ order.id }}</strong> has been cancelled.</p>
+
+<div style="background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin: 0 0 10px 0; color: #842029; font-size: 16px;">Cancellation Notice</h3>
+    <p style="margin: 0; color: #842029;">If this order was prepaid, the refund process will be initiated shortly according to our refund policy.</p>
+</div>
+
+<p>If you have any questions regarding this cancellation, please contact our support team.</p>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+<h2 style="color: #212529; margin-top: 0;">Hi {{ contact.name }},</h2>
+<p>Thank you for contacting <strong>SportsHub</strong>!</p>
+<p>We have received your message and our support team will get back to you as soon as possible (usually within 24 hours).</p>
+
+<div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #dee2e6;">
+    <h3 style="margin: 0 0 10px 0; color: #495057; font-size: 16px;">Your Message Details:</h3>
+    <p style="margin: 0 0 5px 0;"><strong>Subject:</strong> {{ contact.subject }}</p>
+    <p style="margin: 0; color: #6c757d;"><em>"{{ contact.message }}"</em></p>
+</div>
+
+<p style="margin-bottom: 0;">Please reply directly to this email if you need to add any additional information.</p>
+{% endblock %}

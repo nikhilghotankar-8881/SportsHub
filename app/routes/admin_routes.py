@@ -18,7 +18,12 @@ from app.models import (
     User, Product, Order, OrderItem, OrderStatus,
     Review, Coupon, Contact, OrderStatusHistory, Payment, PaymentStatus,
 )
-from app.helpers.email_helper import send_order_delivered_email
+from app.helpers.email_helper import (
+    send_order_delivered_email,
+    send_order_shipped_email,
+    send_order_cancelled_email,
+    send_order_status_email
+)
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -358,12 +363,18 @@ def order_update_status(order_id):
     db.session.add(history)
     db.session.commit()
 
-    # Send delivery email
-    if new_status == "delivered":
-        try:
+    # Send appropriate status email
+    try:
+        if new_status == "delivered":
             send_order_delivered_email(order.user, order)
-        except Exception:
-            pass
+        elif new_status == "shipped":
+            send_order_shipped_email(order.user, order)
+        elif new_status == "cancelled":
+            send_order_cancelled_email(order.user, order)
+        elif new_status in ["placed", "confirmed", "packed", "out_for_delivery"]:
+            send_order_status_email(order.user, order, new_status.replace("_", " ").title())
+    except Exception:
+        pass
 
     flash(f"Order #{order.id} updated to '{new_status}'.", "success")
     return redirect(url_for("admin.orders"))

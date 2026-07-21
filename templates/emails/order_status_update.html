@@ -1,0 +1,18 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+<h2 style="color: #212529; margin-top: 0;">Hi {{ user.name }},</h2>
+<p>The status of your order <strong>#{{ order.id }}</strong> has been updated.</p>
+
+<div style="background-color: #e2e3e5; border-left: 4px solid #6c757d; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin: 0 0 5px 0; color: #383d41; font-size: 16px;">New Status: <span style="color: #0d6efd;">{{ new_status }}</span></h3>
+</div>
+
+<p>You can view your complete order history and details on your dashboard.</p>
+<table width="100%" cellspacing="0" cellpadding="0" style="margin-top: 25px; margin-bottom: 25px;">
+    <tr>
+        <td align="center">
+            <a href="{{ url_for('main.order_detail', order_id=order.id, _external=True) }}" style="background-color: #0d6efd; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">Track Order</a>
+        </td>
+    </tr>
+</table>
+{% endblock %}

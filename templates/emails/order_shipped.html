@@ -1,0 +1,16 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+<h2 style="color: #212529; margin-top: 0;">Hi {{ user.name }},</h2>
+<p>Good news! Your order <strong>#{{ order.id }}</strong> has been shipped and is on its way to you.</p>
+
+<div style="background-color: #cff4fc; border-left: 4px solid #0dcaf0; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin: 0 0 10px 0; color: #055160; font-size: 16px;">Shipping Information</h3>
+    <p style="margin: 0 0 5px 0; color: #055160;"><strong>Delivery To:</strong></p>
+    <p style="margin: 0 0 10px 0; color: #055160;">
+        {{ order.shipping_name }}<br>
+        {{ order.shipping_address }}, {{ order.shipping_city }}
+    </p>
+</div>
+
+<p>Please ensure someone is available to receive the package.</p>
+{% endblock %}

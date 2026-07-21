@@ -39,6 +39,13 @@ def contact():
         db.session.add(contact_msg)
         db.session.commit()
 
+        # Send confirmation email
+        try:
+            from app.helpers.email_helper import send_contact_confirmation_email
+            send_contact_confirmation_email(contact_msg)
+        except Exception:
+            pass
+
         flash("Thank you! Your message has been sent. We'll get back to you shortly.", "success")
         return redirect(url_for("contact.contact"))
 

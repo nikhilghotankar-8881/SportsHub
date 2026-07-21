@@ -16,7 +16,7 @@ from app.models import (
     Payment, PaymentStatus
 )
 from app.helpers.email_helper import (
-    send_order_confirmation_email, send_coupon_applied_email
+    send_order_confirmation_email, send_cod_order_email
 )
 
 checkout_bp = Blueprint("checkout", __name__, url_prefix="/checkout")
@@ -216,7 +216,7 @@ def checkout():
 
                 # Send confirmation email (graceful fallback)
                 try:
-                    send_order_confirmation_email(order.user, order)
+                    send_cod_order_email(order.user, order)
                 except Exception:
                     pass
                 

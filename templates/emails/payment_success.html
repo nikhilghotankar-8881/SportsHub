@@ -1,0 +1,21 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+<h2 style="color: #212529; margin-top: 0;">Hi {{ user.name }},</h2>
+<p>We successfully received your payment for order <strong>#{{ order.id }}</strong>.</p>
+
+<div style="background-color: #d1e7dd; border-left: 4px solid #198754; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin: 0 0 10px 0; color: #0f5132; font-size: 16px;">Payment Successful</h3>
+    <p style="margin: 0 0 5px 0; color: #0f5132;"><strong>Amount Paid:</strong> ₹{{ "%.2f"|format(order.total_amount) }}</p>
+    <p style="margin: 0 0 5px 0; color: #0f5132;"><strong>Payment ID:</strong> {{ payment.razorpay_payment_id }}</p>
+    <p style="margin: 0; color: #0f5132;"><strong>Date:</strong> {{ payment.payment_date.strftime('%B %d, %Y %H:%M') }}</p>
+</div>
+
+<p>Your order is now being processed. You can track your order status in your dashboard.</p>
+<table width="100%" cellspacing="0" cellpadding="0" style="margin-top: 25px; margin-bottom: 25px;">
+    <tr>
+        <td align="center">
+            <a href="{{ url_for('main.order_detail', order_id=order.id, _external=True) }}" style="background-color: #0d6efd; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">View Order Details</a>
+        </td>
+    </tr>
+</table>
+{% endblock %}
