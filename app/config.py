@@ -3,14 +3,30 @@ import os
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
+def _get_database_uri():
+    """
+    Returns the correct database URI:
+    - Production (Render): reads DATABASE_URL from environment.
+      Render provides a 'postgres://' URL; SQLAlchemy 2.x requires 'postgresql://'.
+    - Local development: falls back to SQLite.
+    """
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        # Render (and some older providers) issue postgres:// URLs.
+        # SQLAlchemy 2.x requires postgresql:// — fix it here.
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        return database_url
+    # Local development — use SQLite
+    return f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'sportshub.db')}"
+
+
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or (_ for _ in ()).throw(
         ValueError("SECRET_KEY environment variable is not set. Set it in your .env file.")
     )
 
-    SQLALCHEMY_DATABASE_URI = (
-        f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'sportshub.db')}"
-    )
+    SQLALCHEMY_DATABASE_URI = _get_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Flask-Mail

@@ -2,7 +2,7 @@
 app/routes/main_routes.py
 Home, dashboard, profile edit, change password.
 """
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.forms import EditProfileForm, ChangePasswordForm
 from app import db
@@ -11,6 +11,16 @@ main = Blueprint("main", __name__)
 
 from app.models import Product, FlashSale, Promotion
 from datetime import datetime
+
+
+# ── Health Check ──────────────────────────────────────────────────────────────
+
+@main.route("/health")
+def health():
+    """Lightweight health check for Render and uptime monitors."""
+    return jsonify({"status": "ok"}), 200
+
+
 
 @main.route("/")
 @main.route("/home")
