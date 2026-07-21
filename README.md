@@ -1,40 +1,57 @@
 # SportsHub 🏀⚽🏏
 
-SportsHub is a Flask-based sports equipment e-commerce platform with full payment integration, email notifications, and an admin dashboard.
-
-## Features
-
-- User Authentication & Authorization
-- Comprehensive Product Catalog with Search, Filters & Pagination
-- Shopping Cart & Checkout System
-- **Payment Integration**: Razorpay Online Payments & Cash on Delivery (COD)
-- **Email Notifications**: Centralized `Flask-Mail` integration with HTML templates
-- **Promotions**: Discount Coupons & Flash Sales
-- Order Management with Status Tracking & History
-- PDF Invoice Generation
-- Wishlist & Product Reviews
-- Advanced Admin Dashboard with Analytics
-- Inventory Management
-- Responsive UI built with Bootstrap 5
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Backend | Python, Flask 3.x |
-| Database (Local) | SQLite |
-| Database (Production) | PostgreSQL |
-| ORM | SQLAlchemy 2.x + Flask-Migrate |
-| Auth | Flask-Login + Werkzeug |
-| Email | Flask-Mail |
-| Payments | Razorpay |
-| PDF | ReportLab |
-| WSGI | Gunicorn |
-| Hosting | Render |
+**SportsHub** is a full-stack e-commerce web application designed for sports equipment. It features a complete shopping experience, from browsing products and applying discount coupons to processing payments, tracking orders, and generating PDF invoices.
 
 ---
 
-## Local Development Setup
+## 🌟 Key Features
+- **User Authentication:** Secure registration, login, and password management.
+- **Product Catalog:** Comprehensive product browsing with category filtering, search, and pagination.
+- **Shopping Cart & Checkout:** Persistent cart, dynamic tax calculation (GST), and shipping logic.
+- **Payment Integration:** Razorpay Test Mode for online transactions & Cash on Delivery (COD).
+- **Email Notifications:** Automated alerts for registration, order updates, and password changes.
+- **Promotions:** Discount coupons and time-limited Flash Sales.
+- **Order Management:** Tracking statuses (Placed, Packed, Shipped, Delivered), history, and PDF invoices.
+- **User Engagement:** Wishlist functionality and product reviews/ratings.
+- **Admin Dashboard:** Comprehensive dashboard for managing inventory, orders, products, and analytics.
+
+---
+
+## 📸 Screenshots
+*(Add screenshots of your application here, e.g., Homepage, Product Catalog, Admin Dashboard, Checkout Flow)*
+
+---
+
+## 🛠️ Tech Stack
+| Component | Technology |
+|---|---|
+| **Backend Framework** | Python 3, Flask 3.x |
+| **Database (Local)** | SQLite |
+| **Database (Production)** | PostgreSQL |
+| **ORM & Migrations** | SQLAlchemy 2.x, Flask-Migrate (Alembic) |
+| **Authentication** | Flask-Login, Werkzeug (Password Hashing) |
+| **Email System** | Flask-Mail (Jinja2 HTML Templates) |
+| **Payment Gateway** | Razorpay SDK |
+| **PDF Generation** | ReportLab |
+| **Frontend** | HTML5, CSS3, Bootstrap 5, Jinja2 Templates |
+| **WSGI Server (Prod)** | Gunicorn (Linux/Render) |
+| **WSGI Server (Test)** | Waitress (Windows) |
+| **Deployment** | Render |
+
+---
+
+## 🏗️ Application Architecture
+The application follows the **Flask Application Factory** pattern, separating concerns into distinct blueprints (e.g., `auth`, `main`, `admin`, `products`, `checkout`). 
+
+### 🗄️ Database Relationships
+- **User:** One-to-Many with Orders, Reviews, CartItems, and WishlistItems.
+- **Product:** One-to-Many with OrderItems, Reviews, CartItems, and WishlistItems. Many-to-One with Category.
+- **Order:** One-to-Many with OrderItems. Many-to-One with User.
+- **Coupon & Promotion:** Independent entities modifying cart totals during checkout.
+
+---
+
+## 🚀 Local Installation Steps
 
 ### 1. Clone the Repository
 ```bash
@@ -42,198 +59,128 @@ git clone https://github.com/nikhilghotankar-8881/SportsHub.git
 cd SportsHub
 ```
 
-### 2. Create Virtual Environment
+### 2. Virtual Environment Setup
 ```bash
 python -m venv venv
 
 # Windows
 venv\Scripts\activate
 
-# Linux / Mac
+# Mac / Linux
 source venv/bin/activate
 ```
 
 ### 3. Install Dependencies
 ```bash
-pip install -r requirements-prod.txt
-```
-
-### 4. Configure Environment Variables
-```bash
-cp .env.example .env
-# Edit .env with your real values (see Environment Variables section below)
-```
-
-### 5. Run Database Migrations
-```bash
-flask db upgrade
-```
-
-### 6. Running the Application
-
-**Local Flask development (Windows/Mac/Linux):**
-```bash
-python run.py
-```
-*(Runs on http://127.0.0.1:5000)*
-
-**Windows production-like testing (using Waitress):**
-```bash
-waitress-serve --listen=127.0.0.1:8000 run:app
-```
-*(Runs on http://127.0.0.1:8000)*
-
-**Render/Linux production (using Gunicorn):**
-```bash
-gunicorn run:app
-```
-*(Used internally by Render during deployment)*
-
----
-
-## Environment Variables
-
-Create a `.env` file in the project root (never commit this file):
-
-| Variable | Required | Description |
-|---|---|---|
-| `SECRET_KEY` | ✅ Yes | Strong random string for Flask sessions |
-| `DATABASE_URL` | Production only | PostgreSQL URL (Render sets this automatically) |
-| `RAZORPAY_KEY_ID` | For payments | Razorpay Key ID (test or live) |
-| `RAZORPAY_KEY_SECRET` | For payments | Razorpay Key Secret |
-| `MAIL_SERVER` | For emails | SMTP server (default: `smtp.gmail.com`) |
-| `MAIL_PORT` | For emails | SMTP port (default: `587`) |
-| `MAIL_USE_TLS` | For emails | Use TLS (default: `true`) |
-| `MAIL_USERNAME` | For emails | Your email address |
-| `MAIL_PASSWORD` | For emails | Gmail App Password (not your regular password) |
-| `MAIL_DEFAULT_SENDER` | For emails | From address for outgoing emails |
-
-> **Local Development**: `DATABASE_URL` is not needed locally. The app automatically uses SQLite.
->
-> **Gmail App Password**: Generate one at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-
-See `.env.example` for a template with placeholder values.
-
----
-
-## Database Migrations
-
-```bash
-# Check current migration state
-flask db current
-
-# Show all available migration heads
-flask db heads
-
-# Apply all pending migrations (run this on first deploy and after schema changes)
-flask db upgrade
-
-# Generate a new migration after changing models.py
-flask db migrate -m "describe your change"
+pip install -r requirements.txt
 ```
 
 ---
 
-## Health Check
+## ⚙️ Environment Variables
+Create a `.env` file in the project root. DO NOT commit this file.
 
-The application exposes a health check endpoint:
+```env
+SECRET_KEY=your-strong-random-secret-key
 
-```
-GET /health
-→ {"status": "ok"}
-```
+# Database
+DATABASE_URL= # Leave blank for local SQLite. Use Postgres URL for Render.
 
-This is used by Render to verify the service is running.
-
----
-
-## 📧 Email Notification System
-
-SportsHub uses `Flask-Mail` for transactional emails. If email credentials are not configured, the app logs a warning but **never crashes**.
-
-### Supported Notifications
-- Registration Welcome Email
-- Password Change Security Alert
-- Order Confirmation (Razorpay / Online)
-- Cash on Delivery (COD) Order Placed
-- Payment Success (Razorpay verification)
-- Order Status Updates (Confirmed, Packed, Out for Delivery)
-- Order Shipped
-- Order Delivered
-- Order Cancelled
-- Contact Us Confirmation
-
----
-
-## 🚀 Render Deployment
-
-### Step 1 — Push to GitHub
-Ensure your code is pushed to GitHub. The `.env` file must **not** be committed (already excluded in `.gitignore`).
-
-### Step 2 — Create a PostgreSQL Database on Render
-1. Go to [render.com](https://render.com) → **New** → **PostgreSQL**
-2. Give it a name (e.g., `sportshub-db`)
-3. Copy the **Internal Database URL** (you'll need it in Step 4)
-
-### Step 3 — Create a Web Service on Render
-1. Go to **New** → **Web Service**
-2. Connect your GitHub repository
-3. Configure:
-
-| Setting | Value |
-|---|---|
-| **Name** | `sportshub` |
-| **Environment** | `Python 3` |
-| **Build Command** | `pip install -r requirements-prod.txt` |
-| **Start Command** | `gunicorn run:app` |
-
-### Step 4 — Set Environment Variables on Render
-In your Web Service → **Environment** tab, add:
-
-```
-SECRET_KEY=<generate a strong random key>
-DATABASE_URL=<paste the Internal Database URL from Step 2>
+# Razorpay Test Mode
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxx
+
+# Email Configuration (Gmail App Password required)
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=true
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-gmail-app-password
 MAIL_DEFAULT_SENDER=your-email@gmail.com
 ```
-
-### Step 5 — Run Migrations on First Deploy
-After the first deploy, open the Render **Shell** tab and run:
-```bash
-flask db upgrade
-```
-
-Or add it to the Build Command:
-```
-pip install -r requirements-prod.txt && flask db upgrade
-```
-
-### Step 6 — Verify
-Visit `https://your-app.onrender.com/health` — you should see `{"status": "ok"}`.
+*Note: For Gmail, generate an [App Password](https://myaccount.google.com/apppasswords) instead of using your standard password.*
 
 ---
 
-## Project Structure
+## 🗃️ Database Migrations
+Run these commands to apply the database schema locally:
 
+```bash
+# Verify current migration state
+flask db current
+flask db heads
+
+# Apply all migrations to the database
+flask db upgrade
 ```
+
+---
+
+## 🏃 Running the Application
+
+### Option A: Local Flask Development (Windows/Mac/Linux)
+```bash
+python run.py
+```
+*Accessible at `http://127.0.0.1:5000`*
+
+### Option B: Windows Production-like Testing
+Uses `waitress` to test the WSGI configuration natively on Windows:
+```bash
+waitress-serve --listen=127.0.0.1:8000 run:app
+```
+*Accessible at `http://127.0.0.1:8000`*
+
+### Option C: Production Deployment (Render / Linux)
+Render uses `gunicorn` to serve the application:
+```bash
+gunicorn run:app
+```
+*(Render executes this automatically based on the Build Settings)*
+
+---
+
+## 🌐 Production Deployment (Render)
+1. Push the repository to GitHub.
+2. Create a new **PostgreSQL** database on Render and copy its Internal URL.
+3. Create a **Web Service** on Render linked to your repository.
+4. Set the **Build Command**: `pip install -r requirements-prod.txt && flask db upgrade`
+5. Set the **Start Command**: `gunicorn run:app`
+6. Add the environment variables from the `.env` section above in the Render dashboard.
+
+---
+
+## 📂 Project Structure
+```text
 SportsHub/
 ├── app/
-│   ├── __init__.py          # App factory, extensions
-│   ├── config.py            # Configuration (SQLite local / PostgreSQL prod)
-│   ├── models.py            # SQLAlchemy models
-│   ├── forms.py             # WTForms
-│   ├── helpers/
-│   │   └── email_helper.py  # Flask-Mail email senders
-│   └── routes/              # Blueprint route handlers
-├── templates/               # Jinja2 HTML templates
-│   └── emails/              # Transactional email templates
-├── static/                  # CSS, JS, images
-├── migrations/              # Flask-Migrate Alembic migrations
-├── run.py                   # App entry point (gunicorn run:app)
-├── requirements-prod.txt    # Production dependencies (for Render)
-├── requirements.txt         # Full local dev dependencies
-└── .env.example             # Environment variable template
-```
+│   ├── __init__.py           # Application Factory
+│   ├── config.py             # SQLite/PostgreSQL Config logic
+│   ├── models.py             # Database Schema
+│   ├── forms.py              # WTForms classes
+│   ├── routes/               # Blueprints (auth, main, admin, etc.)
+│   └── helpers/              # Email, Invoice, and Discount logic
+├── migrations/               # Alembic database migrations
+├── templates/                # Jinja2 HTML Templates
+├── static/                   # CSS, JS, and image assets
+├── run.py                    # WSGI Entry Point
+├── requirements.txt          # Local development packages
+├── requirements-prod.txt     # Clean production packages for Render
+└── .env.example              # Environment variable placeholders
+```
+
+---
+
+## 🔒 Security Notes
+- Passwords are cryptographically hashed using `Werkzeug.security`.
+- CSRF protection is enforced on all forms using `Flask-WTF`.
+- Route protection is implemented via `@login_required` and custom admin checks.
+- Sensitive variables and database URIs are strictly loaded from `.env` (never hardcoded).
+
+---
+
+## 🔮 Future Improvements
+- **Live Payments:** Transition Razorpay from Test Mode to Live Mode.
+- **Automated Testing:** Implement `pytest` for unit and integration testing.
+- **REST API:** Extract backend logic into a JSON API to support mobile applications.
+- **OAuth:** Allow users to log in via Google or GitHub.
