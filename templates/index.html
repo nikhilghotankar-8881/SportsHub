@@ -1,191 +1,294 @@
 {% extends "base.html" %}
 
-{% block title %}SportsHub – Home{% endblock %}
+{% block title %}SportsHub – Elevate Your Game | Premium Sports Gear & Equipment{% endblock %}
 
 {% block content %}
-<!-- ── Hero ── -->
-<section class="hero-section">
-  <div class="container-custom">
-    <div class="row align-items-center">
+<!-- ── Hero Section ── -->
+<section class="hero-section position-relative overflow-hidden" style="padding: 4.5rem 0 5rem;">
+  <div class="container-custom position-relative" style="z-index: 2;">
+    <div class="row align-items-center g-5">
+      
+      <!-- Hero Copy -->
       <div class="col-lg-7">
-
-        <div class="hero-badge">
-          <i class="bi bi-lightning-charge-fill"></i> #1 Sports Destination
+        <div class="hero-badge mb-3">
+          <i class="bi bi-fire text-warning"></i> #1 Rated Sports & Fitness Hub
         </div>
 
-        <h1 class="hero-title">
-          Elevate Your<br>
-          <span class="highlight">Game.</span>
-          <span class="highlight-accent">Dominate.</span>
+        <h1 class="hero-title mb-3" style="font-size: clamp(2.5rem, 5vw, 3.8rem); line-height: 1.15; font-weight: 800;">
+          Elevate Your <span class="highlight">Game.</span><br>
+          <span class="highlight-accent">Dominate</span> Every Match.
         </h1>
 
-        <p class="hero-description">
-          SportsHub is your all-in-one platform for premium sports gear,
-          live scores, training guides, and a passionate community of athletes.
+        <p class="hero-description mb-4" style="max-width: 540px; font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6;">
+          Discover professional match-grade footballs, hand-crafted Kashmir willow bats, elite running shoes, and fitness gear from global brands. Delivered to your doorstep with guaranteed authenticity.
         </p>
 
-        <div class="hero-actions">
-          {% if current_user.is_authenticated %}
-            <a href="{{ url_for('main.dashboard') }}" class="btn-primary-custom" id="hero-dashboard-btn">
-              <i class="bi bi-grid-1x2"></i> Go to Dashboard
-            </a>
-          {% else %}
-            <a href="{{ url_for('auth.register') }}" class="btn-accent-custom" id="hero-signup-btn">
-              <i class="bi bi-person-plus"></i> Join for Free
-            </a>
-            <a href="{{ url_for('auth.login') }}" class="btn-outline-custom" id="hero-login-btn">
-              <i class="bi bi-box-arrow-in-right"></i> Sign In
-            </a>
-          {% endif %}
+        <!-- CTA Buttons -->
+        <div class="d-flex align-items-center gap-3 flex-wrap mb-4">
+          <a href="{{ url_for('products.products') }}" class="btn-primary-custom" id="hero-shop-btn">
+            <i class="bi bi-bag-check-fill"></i> Shop All Gear
+          </a>
+          <a href="{{ url_for('products.products', sort='price_asc') }}" class="btn-accent-custom" id="hero-deals-btn">
+            <i class="bi bi-lightning-charge-fill"></i> View Flash Deals
+          </a>
         </div>
 
-        <div class="stats-row">
+        <!-- Live Metrics Strip -->
+        <div class="stats-row mt-4 pt-2">
           <div class="stat-item">
             <span class="stat-value">50K+</span>
-            <span class="stat-label">Athletes</span>
+            <span class="stat-label">Athletes Geared</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">120+</span>
-            <span class="stat-label">Sports</span>
+            <span class="stat-value">100%</span>
+            <span class="stat-label">Authentic Brands</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">4.9★</span>
-            <span class="stat-label">Rating</span>
+            <span class="stat-value">4.9 ★</span>
+            <span class="stat-label">Customer Rating</span>
           </div>
         </div>
-
       </div>
 
+      <!-- Hero Visual Showcase (3D Floating Glassmorphic Cards) -->
       <div class="col-lg-5 d-none d-lg-flex justify-content-center">
-        <div style="font-size: 10rem; filter: drop-shadow(0 0 40px rgba(0,198,255,0.25));">
-          🏆
+        <div class="hero-visual-container">
+          <div class="hero-glow-sphere"></div>
+
+          <!-- Top-Left Floating Badge -->
+          <div class="hero-card-badge-top">
+            <div class="rounded-circle p-2 bg-warning bg-opacity-25 text-warning d-flex align-items-center justify-content-center">
+              <i class="bi bi-lightning-fill fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-white small">Flash Sale Live</div>
+              <div class="text-warning small" style="font-size:0.75rem;">Up to 25% OFF</div>
+            </div>
+          </div>
+
+          <!-- Central Showcase Card -->
+          <div class="hero-card-floating-main">
+            <div class="position-relative overflow-hidden rounded-4 mb-3" style="height: 200px; background: #000;">
+              <img src="https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=80" alt="FIFA Pro Match Football" class="w-100 h-100 object-fit-cover" />
+              <span class="badge bg-primary position-absolute top-0 start-0 m-2 px-2 py-1" style="font-size:0.75rem;">PRO SERIES</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="text-uppercase small text-primary fw-bold" style="font-size:0.75rem;">Football</span>
+                <h5 class="fw-bold text-white mb-0" style="font-size:1.05rem;">FIFA Match Pro Size 5</h5>
+              </div>
+              <div class="text-end">
+                <div class="text-success fw-bold fs-5">₹1,499</div>
+                <div class="text-muted small text-decoration-line-through" style="font-size:0.75rem;">₹1,999</div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-between mt-3 pt-2 border-top border-secondary border-opacity-25">
+              <div class="text-warning small">
+                <i class="bi bi-star-fill"></i>
+                <i class="bi bi-star-fill"></i>
+                <i class="bi bi-star-fill"></i>
+                <i class="bi bi-star-fill"></i>
+                <i class="bi bi-star-fill"></i>
+                <span class="text-muted ms-1">(4.9)</span>
+              </div>
+              <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">In Stock</span>
+            </div>
+          </div>
+
+          <!-- Bottom-Right Floating Badge -->
+          <div class="hero-card-badge-bottom">
+            <div class="rounded-circle p-2 bg-info bg-opacity-25 text-info d-flex align-items-center justify-content-center">
+              <i class="bi bi-truck fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-white small">Express Delivery</div>
+              <div class="text-muted small" style="font-size:0.75rem;">Free above ₹999</div>
+            </div>
+          </div>
+
         </div>
       </div>
+
     </div>
   </div>
 </section>
 
-<!-- ── Features ── -->
-<section style="padding: 5rem 0; background: rgba(255,255,255,0.01);">
+<!-- ── Quick Category Pill Navigation ── -->
+<section style="padding: 1.5rem 0; background: rgba(255, 255, 255, 0.015); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
   <div class="container-custom">
-
-    <div class="text-center mb-5">
-      <h2 class="hero-title" style="font-size: 2.2rem;">
-        Everything You Need to <span class="highlight">Win</span>
-      </h2>
-      <p class="hero-description" style="margin: 0.8rem auto 0; max-width: 480px;">
-        From gear to community — SportsHub has every edge you need.
-      </p>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+      <div class="small text-uppercase text-muted fw-bold" style="letter-spacing:1px;font-size:0.75rem;">
+        <i class="bi bi-grid-fill text-primary me-1"></i> Quick Sport Selector
+      </div>
+      <a href="{{ url_for('products.products') }}" class="small text-primary text-decoration-none">View All Categories &rarr;</a>
     </div>
-
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="dashboard-card h-100">
-          <div class="card-icon icon-blue"><i class="bi bi-trophy-fill" style="color:#00c6ff;"></i></div>
-          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;">Premium Gear</h5>
-          <p style="color:var(--text-secondary);font-size:0.9rem;">
-            Curated professional-grade equipment from top brands, delivered fast.
-          </p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="dashboard-card h-100">
-          <div class="card-icon icon-orange"><i class="bi bi-people-fill" style="color:#ff6b35;"></i></div>
-          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;">Athlete Community</h5>
-          <p style="color:var(--text-secondary);font-size:0.9rem;">
-            Connect with 50,000+ athletes, share achievements, and get inspired.
-          </p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="dashboard-card h-100">
-          <div class="card-icon icon-green"><i class="bi bi-bar-chart-fill" style="color:#10b981;"></i></div>
-          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;">Live Scores & Stats</h5>
-          <p style="color:var(--text-secondary);font-size:0.9rem;">
-            Real-time scores, leaderboards, and performance analytics at a glance.
-          </p>
-        </div>
-      </div>
+    <div class="category-pills-wrap">
+      <a href="{{ url_for('products.products', category='Football') }}" class="category-pill">
+        ⚽ <span>Football</span>
+      </a>
+      <a href="{{ url_for('products.products', category='Cricket') }}" class="category-pill">
+        🏏 <span>Cricket</span>
+      </a>
+      <a href="{{ url_for('products.products', category='Basketball') }}" class="category-pill">
+        🏀 <span>Basketball</span>
+      </a>
+      <a href="{{ url_for('products.products', category='Badminton') }}" class="category-pill">
+        🏸 <span>Badminton</span>
+      </a>
+      <a href="{{ url_for('products.products', category='Running') }}" class="category-pill">
+        👟 <span>Running</span>
+      </a>
+      <a href="{{ url_for('products.products', category='Fitness') }}" class="category-pill">
+        🏋️ <span>Gym & Fitness</span>
+      </a>
+      <a href="{{ url_for('products.products', category='Tennis') }}" class="category-pill">
+        🎾 <span>Tennis</span>
+      </a>
     </div>
-
   </div>
 </section>
 
-<!-- ── Active Promotions & Flash Sales ── -->
+<!-- ── Active Flash Sales & Limited-Time Promos ── -->
 {% if active_flash_sales or active_promotions %}
-<section style="padding: 2rem 0; background: var(--bg-card-1);">
+<section style="padding: 3.5rem 0;">
   <div class="container-custom">
     <div class="row g-4">
-      {% for flash_sale in active_flash_sales %}
-      <div class="col-md-6 col-lg-4">
-        <div class="dashboard-card h-100" style="border: 2px solid var(--accent);">
-          <div class="card-icon icon-orange" style="margin-bottom:0.5rem;"><i class="bi bi-lightning-fill" style="color:#fbbf24;"></i></div>
-          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;color:var(--accent);">FLASH SALE: {{ flash_sale.discount_value }}% OFF</h5>
-          <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1rem;">
-            On <a href="{{ url_for('products.product_detail', product_id=flash_sale.product.id) }}" style="color:var(--primary);text-decoration:none;font-weight:bold;">{{ flash_sale.product.name }}</a>
-          </p>
-          <div style="font-size:0.8rem;color:var(--text-muted);">
-            <i class="bi bi-clock-history"></i> Ends: {{ flash_sale.end_time.strftime('%b %d, %I:%M %p') }}
-          </div>
-        </div>
-      </div>
-      {% endfor %}
       
-      {% for promo in active_promotions %}
-      <div class="col-md-6 col-lg-4">
-        <div class="dashboard-card h-100" style="border: 1px solid var(--primary);">
-          <div class="card-icon icon-blue" style="margin-bottom:0.5rem;"><i class="bi bi-megaphone-fill" style="color:#00c6ff;"></i></div>
-          <h5 style="font-family:'Outfit',sans-serif;font-weight:700;margin-bottom:0.5rem;color:var(--primary);">{{ promo.name }}</h5>
-          <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1rem;">
-            {% if promo.description %}{{ promo.description }}{% else %}Special discount available now!{% endif %}
-          </p>
-          <div style="font-size:0.8rem;color:var(--text-muted);">
-            <i class="bi bi-calendar-event"></i> Ends: {{ promo.end_date.strftime('%b %d') }}
+      {% for flash_sale in active_flash_sales %}
+      <div class="col-lg-6">
+        <div class="flash-sale-banner h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <span class="badge bg-danger px-3 py-2 fs-6 fw-bold">
+                <i class="bi bi-lightning-fill"></i> FLASH SALE: {{ flash_sale.discount_value|int }}% OFF
+              </span>
+              <!-- JavaScript Countdown Timer -->
+              <div class="countdown-box" id="flash-countdown-{{ flash_sale.id }}" data-end="{{ flash_sale.end_time.isoformat() }}">
+                <span class="text-secondary small me-1">Ends in:</span>
+                <div class="timer-unit"><span class="timer-val hours">00</span><span class="timer-lbl">hrs</span></div>
+                <div class="timer-unit"><span class="timer-val minutes">00</span><span class="timer-lbl">min</span></div>
+                <div class="timer-unit"><span class="timer-val seconds">00</span><span class="timer-lbl">sec</span></div>
+              </div>
+            </div>
+
+            <h3 class="fw-bold text-white mb-2">{{ flash_sale.product.name }}</h3>
+            <p class="text-secondary small mb-3">{{ flash_sale.product.description[:120] if flash_sale.product.description else 'Limited time special offer on premium gear.' }}...</p>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between pt-3 border-top border-secondary border-opacity-25 mt-2">
+            <div>
+              <span class="text-muted text-decoration-line-through me-2 fs-6">₹{{ "%.2f"|format(flash_sale.product.price) }}</span>
+              <span class="text-warning fw-bold fs-4">₹{{ "%.2f"|format(flash_sale.product.effective_price) }}</span>
+            </div>
+            <a href="{{ url_for('products.product_detail', product_id=flash_sale.product.id) }}" class="btn-accent-custom py-2 px-3">
+              <i class="bi bi-bag-fill"></i> Claim Offer
+            </a>
           </div>
         </div>
       </div>
       {% endfor %}
+
+      {% for promo in active_promotions %}
+      <div class="col-lg-6">
+        <div class="dashboard-card h-100 d-flex flex-column justify-content-between" style="border: 1.5px solid rgba(0, 198, 255, 0.4);">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <span class="badge bg-primary px-3 py-2 fw-bold"><i class="bi bi-megaphone-fill me-1"></i> SPECIAL OFFER</span>
+              <span class="text-muted small">Expires {{ promo.end_date.strftime('%b %d, %Y') }}</span>
+            </div>
+            <h4 class="fw-bold text-white mb-2">{{ promo.name }}</h4>
+            <p class="text-secondary small mb-3">{{ promo.description or 'Special discount applied during checkout.' }}</p>
+          </div>
+          <div class="d-flex align-items-center justify-content-between pt-3 border-top border-secondary border-opacity-25">
+            <span class="text-primary fw-bold fs-5">
+              {% if promo.promo_type == 'percentage' %}{{ promo.discount_value|int }}% OFF{% else %}Flat ₹{{ promo.discount_value }} OFF{% endif %}
+            </span>
+            <a href="{{ url_for('products.products') }}" class="btn-primary-custom py-2 px-3">
+              Browse Eligible Gear
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
     </div>
   </div>
 </section>
 {% endif %}
 
-<!-- ── Featured Products ── -->
-<section style="padding: 5rem 0;">
+<!-- ── Featured Products Grid ── -->
+<section style="padding: 4rem 0;">
   <div class="container-custom">
-    <div class="d-flex justify-content-between align-items-end mb-4">
+    
+    <!-- Section Header -->
+    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
       <div>
-        <h2 class="hero-title" style="font-size: 2rem;">Featured <span class="highlight">Products</span></h2>
-        <p class="hero-description" style="margin-top:0.5rem;font-size:1rem;">Handpicked gear for top performers.</p>
+        <div class="text-uppercase small text-primary fw-bold mb-1" style="letter-spacing:1px;">Top Performance</div>
+        <h2 class="hero-title mb-0" style="font-size: 2.2rem;">Featured <span class="highlight">Gear</span></h2>
       </div>
-      <a href="{{ url_for('products.products') }}" class="btn-outline-custom">View All</a>
+      <a href="{{ url_for('products.products') }}" class="btn-outline-custom">
+        Explore All Products <i class="bi bi-arrow-right ms-1"></i>
+      </a>
     </div>
 
+    <!-- Product Cards Grid -->
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
       {% for product in featured_products %}
       <div class="col">
-        <div class="product-card" id="product-card-{{ product.id }}">
-          <a href="{{ url_for('products.product_detail', product_id=product.id) }}" style="display:block;text-decoration:none;color:inherit;">
-            <div class="product-img-wrap">
-              {% if product.image %}
-                <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" />
-              {% else %}
-                <span class="product-placeholder-icon">🏅</span>
-              {% endif %}
-              {% if product.category %}
-                <span class="product-badge badge-category">{{ product.category }}</span>
-              {% endif %}
-              {% if not product.in_stock %}
-                <span class="product-badge badge-out-of-stock" style="top:0.7rem;left:auto;right:0.7rem;">Out of Stock</span>
-              {% endif %}
-            </div>
+        <div class="product-card h-100 d-flex flex-column justify-content-between" id="product-card-{{ product.id }}">
+          
+          <div>
+            <!-- Image Wrap -->
+            <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="text-decoration-none">
+              <div class="product-img-wrap">
+                {% if product.image %}
+                  <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" />
+                {% else %}
+                  <span class="product-placeholder-icon">🏅</span>
+                {% endif %}
+
+                {% if product.category %}
+                  <span class="product-badge badge-category">{{ product.category }}</span>
+                {% endif %}
+
+                {% if not product.in_stock %}
+                  <span class="product-badge badge-out-of-stock" style="top:0.7rem;left:auto;right:0.7rem;">Out of Stock</span>
+                {% elif product.is_low_stock %}
+                  <span class="product-badge badge-low-stock" style="top:0.7rem;left:auto;right:0.7rem;">Only {{ product.stock }} Left</span>
+                {% endif %}
+              </div>
+            </a>
+
+            <!-- Card Body -->
             <div class="product-body">
-              {% if product.category %}
-                <span class="product-category-tag">{{ product.category }}</span>
-              {% endif %}
-              <h5 class="product-name" style="margin-bottom: 0.3rem;">{{ product.name }}</h5>
-              <div style="display: flex; align-items: center; gap: 0.3rem;">
-                <div style="color: #fbbf24; font-size: 0.85rem;">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="product-category-tag mb-0">{{ product.category }}</span>
+                
+                <!-- Wishlist Toggle -->
+                {% if current_user.is_authenticated %}
+                  {% set in_wishlist = current_user.wishlist_items.filter_by(product_id=product.id).first() is not none %}
+                  <form method="POST" action="{% if in_wishlist %}{{ url_for('wishlist.remove', product_id=product.id) }}{% else %}{{ url_for('wishlist.add', product_id=product.id) }}{% endif %}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm p-1 text-muted hover-danger border-0" title="{% if in_wishlist %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}">
+                      <i class="bi {% if in_wishlist %}bi-heart-fill text-danger{% else %}bi-heart text-secondary{% endif %} fs-6"></i>
+                    </button>
+                  </form>
+                {% else %}
+                  <a href="{{ url_for('auth.login') }}" class="btn btn-sm p-1 text-secondary border-0" title="Sign in to save">
+                    <i class="bi bi-heart fs-6"></i>
+                  </a>
+                {% endif %}
+              </div>
+
+              <h5 class="product-name">
+                <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="text-white text-decoration-none">
+                  {{ product.name }}
+                </a>
+              </h5>
+
+              <!-- Star Rating -->
+              <div class="d-flex align-items-center gap-1 my-2">
+                <div class="text-warning small">
                   {% set avg_rating = product.average_rating|round|int %}
                   {% for i in range(1, 6) %}
                     {% if i <= avg_rating %}
@@ -195,121 +298,210 @@
                     {% endif %}
                   {% endfor %}
                 </div>
-                <span style="color: var(--text-muted); font-size: 0.75rem;">({{ product.total_reviews }})</span>
-              </div>
-              
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
-                {% if product.effective_price < product.price %}
-                <p class="product-price" style="margin:0;">
-                  <span class="text-muted text-decoration-line-through me-1" style="font-size:0.85rem;">₹{{ "%.2f"|format(product.price) }}</span>
-                  <span class="text-danger">₹{{ "%.2f"|format(product.effective_price) }}</span>
-                </p>
-                {% else %}
-                <p class="product-price" style="margin:0;">{{ product.formatted_price }}</p>
-                {% endif %}
-                {% set in_wishlist = False %}
-                {% if current_user.is_authenticated %}
-                  {% set in_wishlist = current_user.wishlist_items.filter_by(product_id=product.id).first() is not none %}
-                {% endif %}
-                
-                <div style="position:relative; z-index: 10;">
-                  {% if current_user.is_authenticated %}
-                    {% if in_wishlist %}
-                      <form method="POST" action="{{ url_for('wishlist.remove', product_id=product.id) }}" style="display:inline;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--accent);">
-                          <i class="bi bi-heart-fill"></i>
-                        </button>
-                      </form>
-                    {% else %}
-                      <form method="POST" action="{{ url_for('wishlist.add', product_id=product.id) }}" style="display:inline;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
-                          <i class="bi bi-heart"></i>
-                        </button>
-                      </form>
-                    {% endif %}
-                  {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
-                      <i class="bi bi-heart"></i>
-                    </a>
-                  {% endif %}
-                </div>
+                <span class="text-muted" style="font-size: 0.75rem;">({{ product.total_reviews }})</span>
               </div>
             </div>
-          </a>
+          </div>
+
+          <!-- Price & Action -->
+          <div class="product-body pt-0 mt-auto">
+            <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-10">
+              <div>
+                {% if product.effective_price < product.price %}
+                  <div class="text-muted text-decoration-line-through small" style="font-size:0.75rem;">₹{{ "%.2f"|format(product.price) }}</div>
+                  <div class="product-price text-warning fw-bold mb-0">₹{{ "%.2f"|format(product.effective_price) }}</div>
+                {% else %}
+                  <div class="product-price fw-bold mb-0">{{ product.formatted_price }}</div>
+                {% endif %}
+              </div>
+
+              {% if product.in_stock %}
+                <form method="POST" action="{{ url_for('cart.add', product_id=product.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="btn-primary-custom py-1 px-3 small" style="font-size:0.8rem;" title="Add to Cart">
+                    <i class="bi bi-cart-plus"></i> Add
+                  </button>
+                </form>
+              {% else %}
+                <button class="btn btn-sm btn-secondary disabled py-1 px-2" style="font-size:0.75rem;">Out of Stock</button>
+              {% endif %}
+            </div>
+          </div>
+
         </div>
       </div>
       {% else %}
-        <p class="text-muted">No featured products available.</p>
+        <div class="col-12 text-center py-5">
+          <p class="text-muted">No featured products found. Run <code>python seed_db.py</code> to seed sample gear.</p>
+        </div>
       {% endfor %}
     </div>
+
   </div>
 </section>
 
-<!-- ── Latest Arrivals ── -->
-<section style="padding: 5rem 0; background: rgba(255,255,255,0.01);">
+<!-- ── Latest Arrivals Grid ── -->
+<section style="padding: 4rem 0; background: rgba(255, 255, 255, 0.015); border-top: 1px solid var(--border);">
   <div class="container-custom">
-    <div class="d-flex justify-content-between align-items-end mb-4">
+    
+    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
       <div>
-        <h2 class="hero-title" style="font-size: 2rem;">Latest <span class="highlight-accent">Arrivals</span></h2>
-        <p class="hero-description" style="margin-top:0.5rem;font-size:1rem;">Fresh gear just landed.</p>
+        <div class="text-uppercase small text-accent fw-bold mb-1" style="letter-spacing:1px;color:var(--accent);">Just Dropped</div>
+        <h2 class="hero-title mb-0" style="font-size: 2.2rem;">Latest <span class="highlight-accent">Arrivals</span></h2>
       </div>
-      <a href="{{ url_for('products.products', sort='newest') }}" class="btn-outline-custom">View All</a>
+      <a href="{{ url_for('products.products', sort='newest') }}" class="btn-outline-custom">
+        View All New Gear <i class="bi bi-arrow-right ms-1"></i>
+      </a>
     </div>
 
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
       {% for product in latest_arrivals %}
       <div class="col">
-        <div class="product-card" id="product-card-{{ product.id }}">
-          <a href="{{ url_for('products.product_detail', product_id=product.id) }}" style="display:block;text-decoration:none;color:inherit;">
-            <div class="product-img-wrap">
-              {% if product.image %}
-                <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" />
-              {% else %}
-                <span class="product-placeholder-icon">🏅</span>
-              {% endif %}
-              {% if product.category %}
+        <div class="product-card h-100 d-flex flex-column justify-content-between" id="latest-card-{{ product.id }}">
+          <div>
+            <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="text-decoration-none">
+              <div class="product-img-wrap">
+                {% if product.image %}
+                  <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" />
+                {% else %}
+                  <span class="product-placeholder-icon">🏅</span>
+                {% endif %}
                 <span class="product-badge badge-category">{{ product.category }}</span>
-              {% endif %}
-              {% if not product.in_stock %}
-                <span class="product-badge badge-out-of-stock" style="top:0.7rem;left:auto;right:0.7rem;">Out of Stock</span>
-              {% endif %}
-            </div>
+              </div>
+            </a>
+
             <div class="product-body">
-              {% if product.category %}
-                <span class="product-category-tag">{{ product.category }}</span>
-              {% endif %}
-              <h5 class="product-name" style="margin-bottom: 0.3rem;">{{ product.name }}</h5>
-              <div style="display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.5rem;">
-                <div style="color: #fbbf24; font-size: 0.85rem;">
+              <span class="product-category-tag">{{ product.category }}</span>
+              <h5 class="product-name">
+                <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="text-white text-decoration-none">
+                  {{ product.name }}
+                </a>
+              </h5>
+
+              <div class="d-flex align-items-center gap-1 my-2">
+                <div class="text-warning small">
                   {% set avg_rating = product.average_rating|round|int %}
                   {% for i in range(1, 6) %}
-                    {% if i <= avg_rating %}
-                      <i class="bi bi-star-fill"></i>
-                    {% else %}
-                      <i class="bi bi-star"></i>
-                    {% endif %}
+                    {% if i <= avg_rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star"></i>{% endif %}
                   {% endfor %}
                 </div>
-                <span style="color: var(--text-muted); font-size: 0.75rem;">({{ product.total_reviews }})</span>
+                <span class="text-muted" style="font-size: 0.75rem;">({{ product.total_reviews }})</span>
               </div>
-              {% if product.effective_price < product.price %}
-              <p class="product-price" style="margin-bottom:0;">
-                <span class="text-muted text-decoration-line-through me-1" style="font-size:0.85rem;">₹{{ "%.2f"|format(product.price) }}</span>
-                <span class="text-danger">₹{{ "%.2f"|format(product.effective_price) }}</span>
-              </p>
-              {% else %}
-              <p class="product-price" style="margin-bottom:0;">{{ product.formatted_price }}</p>
-              {% endif %}
             </div>
-          </a>
+          </div>
+
+          <div class="product-body pt-0 mt-auto">
+            <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-10">
+              <div class="product-price fw-bold mb-0">
+                {% if product.effective_price < product.price %}
+                  <span class="text-warning">₹{{ "%.2f"|format(product.effective_price) }}</span>
+                {% else %}
+                  {{ product.formatted_price }}
+                {% endif %}
+              </div>
+              <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="btn-outline-custom py-1 px-3 small" style="font-size:0.8rem;">
+                View Details
+              </a>
+            </div>
+          </div>
+
         </div>
       </div>
-      {% else %}
-        <p class="text-muted">No new arrivals available.</p>
       {% endfor %}
     </div>
+
   </div>
 </section>
+
+<!-- ── Why Athletes Choose SportsHub ── -->
+<section style="padding: 5rem 0;">
+  <div class="container-custom">
+    
+    <div class="text-center mb-5">
+      <h2 class="hero-title" style="font-size: 2.2rem;">
+        Engineered for <span class="highlight">Champions</span>
+      </h2>
+      <p class="hero-description mx-auto" style="max-width: 520px;">
+        Every piece of equipment in SportsHub is tested and verified for official tournament compliance and athlete durability.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="dashboard-card h-100 text-center p-4">
+          <div class="card-icon icon-blue mx-auto mb-3" style="width:60px;height:60px;display:flex;align-items:center;justify-content:center;border-radius:16px;">
+            <i class="bi bi-shield-check fs-2" style="color:#00c6ff;"></i>
+          </div>
+          <h4 class="fw-bold mb-2">100% Genuine Gear</h4>
+          <p class="text-secondary small mb-0">
+            Direct partnerships with official manufacturers ensure genuine quality, zero counterfeits, and authentic warranty.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="dashboard-card h-100 text-center p-4">
+          <div class="card-icon icon-orange mx-auto mb-3" style="width:60px;height:60px;display:flex;align-items:center;justify-content:center;border-radius:16px;">
+            <i class="bi bi-lightning-charge-fill fs-2" style="color:#ff6b35;"></i>
+          </div>
+          <h4 class="fw-bold mb-2">Rapid 48-Hour Dispatch</h4>
+          <p class="text-secondary small mb-0">
+            Real-time warehouse order processing ensures your bats, balls, and equipment are packed securely and dispatched immediately.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="dashboard-card h-100 text-center p-4">
+          <div class="card-icon icon-green mx-auto mb-3" style="width:60px;height:60px;display:flex;align-items:center;justify-content:center;border-radius:16px;">
+            <i class="bi bi-wallet2 fs-2" style="color:#10b981;"></i>
+          </div>
+          <h4 class="fw-bold mb-2">Seamless Payments</h4>
+          <p class="text-secondary small mb-0">
+            Flexible payment choices including Razorpay online transactions (Cards, UPI, NetBanking) and convenient Cash on Delivery.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Real-time Flash Sale Countdown Ticker
+  document.addEventListener('DOMContentLoaded', function () {
+    const countdowns = document.querySelectorAll('.countdown-box[data-end]');
+    countdowns.forEach(box => {
+      const endTime = new Date(box.getAttribute('data-end')).getTime();
+      
+      function updateTimer() {
+        const now = new Date().getTime();
+        const diff = endTime - now;
+        
+        if (diff <= 0) {
+          box.innerHTML = '<span class="badge bg-secondary">Flash Sale Ended</span>';
+          return;
+        }
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        const hEl = box.querySelector('.hours');
+        const mEl = box.querySelector('.minutes');
+        const sEl = box.querySelector('.seconds');
+        
+        if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+        if (mEl) mEl.textContent = String(minutes).padStart(2, '0');
+        if (sEl) sEl.textContent = String(seconds).padStart(2, '0');
+      }
+      
+      updateTimer();
+      setInterval(updateTimer, 1000);
+    });
+  });
+</script>
 {% endblock %}
