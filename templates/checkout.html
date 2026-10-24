@@ -213,6 +213,17 @@
             <span style="font-weight:600;">₹{{ "%.2f"|format(gst_amount) }}</span>
           </div>
           <div style="display:flex;justify-content:space-between;
+                      font-size:0.88rem;margin-bottom:0.5rem;">
+            <span style="color:var(--text-secondary);">Shipping Fee</span>
+            <span style="font-weight:600;">
+              {% if shipping_fee and shipping_fee > 0 %}
+                ₹{{ "%.2f"|format(shipping_fee) }}
+              {% else %}
+                <span style="color:var(--success);"><i class="bi bi-check-circle me-1"></i>FREE</span>
+              {% endif %}
+            </span>
+          </div>
+          <div style="display:flex;justify-content:space-between;
                       padding-top:0.8rem;border-top:1px solid var(--border);">
             <span style="font-family:'Outfit',sans-serif;font-weight:700;">Total</span>
             <span style="font-family:'Outfit',sans-serif;font-size:1.4rem;font-weight:800;

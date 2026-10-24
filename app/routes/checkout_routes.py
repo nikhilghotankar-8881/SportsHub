@@ -98,8 +98,12 @@ def checkout():
         taxable_amount = Decimal("0")
         total_discount = subtotal
 
+    free_above     = Decimal(str(current_app.config.get("FREE_DELIVERY_ABOVE", "999")))
+    delivery_chg   = Decimal(str(current_app.config.get("DELIVERY_CHARGE", "49")))
+    shipping_fee   = Decimal("0.00") if subtotal >= free_above else delivery_chg
+
     gst_amount     = (taxable_amount * GST_RATE / 100).quantize(Decimal("0.01"))
-    total          = taxable_amount + gst_amount
+    total          = taxable_amount + gst_amount + shipping_fee
 
     if request.method == "POST":
         # ── Collect shipping fields ───────────────────────────
@@ -125,6 +129,7 @@ def checkout():
                 subtotal=subtotal,
                 discount=discount,
                 gst_amount=gst_amount,
+                shipping_fee=shipping_fee,
                 total=total,
                 coupon_code=coupon_code,
                 form_data=request.form,
@@ -273,6 +278,7 @@ def checkout():
         subtotal=subtotal,
         discount=discount,
         gst_amount=gst_amount,
+        shipping_fee=shipping_fee,
         total=total,
         coupon_code=coupon_code,
         form_data={},

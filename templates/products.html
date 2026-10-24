@@ -1,315 +1,359 @@
 {% extends "base.html" %}
 
-{% block title %}Shop – SportsHub{% endblock %}
+{% block title %}{% if active_category %}{{ active_category }} Gear{% else %}Shop All Sports Equipment{% endif %} – SportsHub{% endblock %}
 
 {% block content %}
-<div class="products-wrapper">
+<div class="products-wrapper" style="padding: 2.5rem 0 4rem;">
+  <div class="container-custom">
 
-  <!-- ── Top Bar ── -->
-  <div class="products-topbar">
-    <div>
-      <h1 class="page-title" style="font-size:1.8rem;">
-        <i class="bi bi-shop" style="color:var(--primary);"></i>
-        Sports <span class="text-gradient">Shop</span>
-      </h1>
-      <p class="products-count">
-        {% if products %}
-          Showing <strong>{{ products|length }}</strong> product{{ 's' if products|length != 1 }} of <strong>{{ pagination.total }}</strong>
-          {% if active_category %}in <em>{{ active_category }}</em>{% endif %}
-          {% if search_query %}matching "<em>{{ search_query }}</em>"{% endif %}
-        {% else %}
-          No products found
-        {% endif %}
-      </p>
-    </div>
+    <!-- ── Breadcrumb ── -->
+    <nav class="sh-breadcrumb mb-3" aria-label="breadcrumb">
+      <a href="{{ url_for('main.index') }}"><i class="bi bi-house-door"></i> Home</a>
+      <span class="sep">/</span>
+      <span class="current">Shop</span>
+      {% if active_category %}
+        <span class="sep">/</span>
+        <span class="current text-primary">{{ active_category }}</span>
+      {% endif %}
+    </nav>
 
-    <!-- Controls -->
-    <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
-      <!-- Search -->
-      <form class="search-bar" method="GET" action="{{ url_for('products.products') }}" id="product-search-form" style="margin-bottom:0;">
-        {% if active_category %}
-          <input type="hidden" name="category" value="{{ active_category }}" />
-        {% endif %}
-        {% if current_sort and current_sort != 'newest' %}
-          <input type="hidden" name="sort" value="{{ current_sort }}" />
-        {% endif %}
-        <input
-          type="text"
-          name="q"
-          class="search-input"
-          placeholder="Search products…"
-          value="{{ search_query }}"
-          id="product-search-input"
-        />
-        <button type="submit" class="btn-primary-custom" style="padding:0.6rem 1rem;" id="search-submit-btn">
-          <i class="bi bi-search"></i>
-        </button>
-        {% if search_query or active_category or (current_sort and current_sort != 'newest') %}
-          <a href="{{ url_for('products.products') }}" class="btn-outline-custom" style="padding:0.58rem 0.9rem;" id="clear-filter-btn" title="Clear all filters">
-            <i class="bi bi-x-lg"></i>
-          </a>
-        {% endif %}
-      </form>
+    <!-- ── Top Bar ── -->
+    <div class="products-topbar mb-4 pb-3 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1 class="page-title mb-1" style="font-size:2rem;font-weight:800;">
+          <i class="bi bi-shop text-primary me-2"></i>Sports <span class="text-gradient">Catalog</span>
+        </h1>
+        <p class="products-count text-muted mb-0" style="font-size:0.9rem;">
+          {% if pagination.total > 0 %}
+            Showing <strong>{{ products|length }}</strong> of <strong>{{ pagination.total }}</strong> products
+            {% if active_category %}in <span class="text-white fw-bold">{{ active_category }}</span>{% endif %}
+            {% if search_query %}matching "<span class="text-white fw-bold">{{ search_query }}</span>"{% endif %}
+          {% else %}
+            No matching equipment found
+          {% endif %}
+        </p>
+      </div>
 
-      <!-- Sort Dropdown -->
-      <div class="dropdown">
-        <button class="btn-outline-custom dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="padding:0.58rem 1rem;background:var(--bg-card);color:var(--text-primary);border-color:var(--border);">
-          <i class="bi bi-sort-down"></i> 
-          {% if current_sort == 'price_asc' %}Price: Low to High
-          {% elif current_sort == 'price_desc' %}Price: High to Low
-          {% else %}Newest First{% endif %}
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="sortDropdown">
-          <li><a class="dropdown-item {% if current_sort == 'newest' or not current_sort %}active{% endif %}" href="{{ url_for('products.products', category=active_category or None, q=search_query or None, sort='newest') }}">Newest First</a></li>
-          <li><a class="dropdown-item {% if current_sort == 'price_asc' %}active{% endif %}" href="{{ url_for('products.products', category=active_category or None, q=search_query or None, sort='price_asc') }}">Price: Low to High</a></li>
-          <li><a class="dropdown-item {% if current_sort == 'price_desc' %}active{% endif %}" href="{{ url_for('products.products', category=active_category or None, q=search_query or None, sort='price_desc') }}">Price: High to Low</a></li>
-        </ul>
+      <!-- Controls: Search & Sort -->
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        
+        <!-- Search bar inside shop -->
+        <form method="GET" action="{{ url_for('products.products') }}" class="d-flex align-items-center gap-2">
+          {% if active_category %}<input type="hidden" name="category" value="{{ active_category }}" />{% endif %}
+          {% if current_sort %}<input type="hidden" name="sort" value="{{ current_sort }}" />{% endif %}
+          {% if in_stock %}<input type="hidden" name="in_stock" value="1" />{% endif %}
+          {% if min_price %}<input type="hidden" name="min_price" value="{{ min_price }}" />{% endif %}
+          {% if max_price %}<input type="hidden" name="max_price" value="{{ max_price }}" />{% endif %}
+          
+          <div class="position-relative">
+            <input type="text" name="q" class="form-control-custom py-2 ps-4 pe-2" style="font-size:0.88rem;width:220px;" placeholder="Filter by name..." value="{{ search_query }}" />
+            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted" style="font-size:0.8rem;"></i>
+          </div>
+          <button type="submit" class="btn-primary-custom py-2 px-3 small" title="Search"><i class="bi bi-search"></i></button>
+        </form>
+
+        <!-- Sort Dropdown -->
+        <div class="dropdown">
+          <button class="btn-outline-custom dropdown-toggle py-2 px-3" type="button" id="sortMenuBtn" data-bs-toggle="dropdown" aria-expanded="false" style="font-size:0.88rem;">
+            <i class="bi bi-sort-down me-1"></i>
+            {% if current_sort == 'price_asc' %}Price: Low to High
+            {% elif current_sort == 'price_desc' %}Price: High to Low
+            {% else %}Newest Arrivals{% endif %}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom" aria-labelledby="sortMenuBtn">
+            <li>
+              <a class="dropdown-item {% if current_sort == 'newest' or not current_sort %}active{% endif %}"
+                 href="{{ url_for('products.products', category=active_category or None, q=search_query or None, min_price=min_price or None, max_price=max_price or None, in_stock=1 if in_stock else None, sort='newest') }}">
+                <i class="bi bi-clock-history"></i> Newest Arrivals
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item {% if current_sort == 'price_asc' %}active{% endif %}"
+                 href="{{ url_for('products.products', category=active_category or None, q=search_query or None, min_price=min_price or None, max_price=max_price or None, in_stock=1 if in_stock else None, sort='price_asc') }}">
+                <i class="bi bi-sort-numeric-down"></i> Price: Low to High
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item {% if current_sort == 'price_desc' %}active{% endif %}"
+                 href="{{ url_for('products.products', category=active_category or None, q=search_query or None, min_price=min_price or None, max_price=max_price or None, in_stock=1 if in_stock else None, sort='price_desc') }}">
+                <i class="bi bi-sort-numeric-down-alt"></i> Price: High to Low
+              </a>
+            </li>
+          </ul>
+        </div>
+
       </div>
     </div>
-  </div>
 
-  <div class="row g-4">
-
-    <!-- ── Sidebar ── -->
-    <div class="col-lg-2 col-md-3">
-      <div class="sidebar-card">
-        <p class="sidebar-title"><i class="bi bi-funnel"></i> Categories</p>
-
-        <a href="{{ url_for('products.products', q=search_query or None, sort=current_sort or None) }}"
-           class="category-link {% if not active_category %}active{% endif %}"
-           id="cat-all">
-          <i class="bi bi-grid-2x2"></i> All
+    <!-- ── Active Filter Pills (if any filters active) ── -->
+    {% if active_category or search_query or min_price or max_price or in_stock %}
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-4 pb-2">
+      <span class="small text-muted fw-bold me-1">Active Filters:</span>
+      
+      {% if active_category %}
+        <a href="{{ url_for('products.products', q=search_query or None, sort=current_sort, min_price=min_price, max_price=max_price, in_stock=1 if in_stock else None) }}" class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 text-decoration-none py-2 px-3 rounded-pill">
+          Sport: {{ active_category }} <i class="bi bi-x-circle ms-1"></i>
         </a>
+      {% endif %}
 
-        {% for cat in categories %}
-          <a href="{{ url_for('products.products', category=cat, q=search_query or None, sort=current_sort or None) }}"
-             class="category-link {% if active_category == cat %}active{% endif %}"
-             id="cat-{{ cat|lower|replace(' ','-') }}">
-            <i class="bi bi-tag"></i> {{ cat }}
-          </a>
-        {% else %}
-          <p style="color:var(--text-muted);font-size:0.82rem;">No categories yet.</p>
-        {% endfor %}
-      </div>
+      {% if search_query %}
+        <a href="{{ url_for('products.products', category=active_category or None, sort=current_sort, min_price=min_price, max_price=max_price, in_stock=1 if in_stock else None) }}" class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25 text-decoration-none py-2 px-3 rounded-pill">
+          Search: "{{ search_query }}" <i class="bi bi-x-circle ms-1"></i>
+        </a>
+      {% endif %}
+
+      {% if min_price or max_price %}
+        <a href="{{ url_for('products.products', category=active_category or None, q=search_query or None, sort=current_sort, in_stock=1 if in_stock else None) }}" class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 text-decoration-none py-2 px-3 rounded-pill">
+          Price: ₹{{ min_price or 0 }} - ₹{{ max_price or 'Any' }} <i class="bi bi-x-circle ms-1"></i>
+        </a>
+      {% endif %}
+
+      {% if in_stock %}
+        <a href="{{ url_for('products.products', category=active_category or None, q=search_query or None, sort=current_sort, min_price=min_price, max_price=max_price) }}" class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-decoration-none py-2 px-3 rounded-pill">
+          In Stock Only <i class="bi bi-x-circle ms-1"></i>
+        </a>
+      {% endif %}
+
+      <a href="{{ url_for('products.products') }}" class="small text-danger ms-2 text-decoration-none fw-bold">
+        Clear All Filters
+      </a>
     </div>
+    {% endif %}
 
-    <!-- ── Product Grid ── -->
-    <div class="col-lg-10 col-md-9">
+    <!-- ── Main Grid Layout (Sidebar + Products) ── -->
+    <div class="row g-4">
 
-      {% if products %}
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
-          {% for product in products %}
+      <!-- ── Filter Sidebar Column ── -->
+      <div class="col-lg-3 col-md-4">
+        
+        <!-- Category Filter Card -->
+        <div class="dashboard-card mb-4 p-3">
+          <h6 class="fw-bold text-white text-uppercase mb-3" style="font-size:0.8rem;letter-spacing:1px;">
+            <i class="bi bi-funnel text-primary me-2"></i>Sports Categories
+          </h6>
+          
+          <div class="d-flex flex-column gap-1">
+            <a href="{{ url_for('products.products', q=search_query or None, sort=current_sort, min_price=min_price, max_price=max_price, in_stock=1 if in_stock else None) }}"
+               class="category-link d-flex justify-content-between align-items-center {% if not active_category %}active{% endif %}"
+               style="padding:0.5rem 0.75rem;border-radius:8px;font-size:0.88rem;">
+              <span><i class="bi bi-grid-2x2 me-2"></i>All Sports</span>
+              <span class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill">{{ pagination.total if not active_category else 'All' }}</span>
+            </a>
+
+            {% for cat in categories %}
+              <a href="{{ url_for('products.products', category=cat, q=search_query or None, sort=current_sort, min_price=min_price, max_price=max_price, in_stock=1 if in_stock else None) }}"
+                 class="category-link d-flex justify-content-between align-items-center {% if active_category == cat %}active{% endif %}"
+                 style="padding:0.5rem 0.75rem;border-radius:8px;font-size:0.88rem;">
+                <span><i class="bi bi-tag me-2"></i>{{ cat }}</span>
+                {% if cat_counts and cat in cat_counts %}
+                  <span class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill">{{ cat_counts[cat] }}</span>
+                {% endif %}
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Price Range & Availability Filter Card -->
+        <div class="dashboard-card p-3">
+          <h6 class="fw-bold text-white text-uppercase mb-3" style="font-size:0.8rem;letter-spacing:1px;">
+            <i class="bi bi-sliders text-primary me-2"></i>Refine by Price & Stock
+          </h6>
+
+          <form method="GET" action="{{ url_for('products.products') }}">
+            {% if active_category %}<input type="hidden" name="category" value="{{ active_category }}" />{% endif %}
+            {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}" />{% endif %}
+            {% if current_sort %}<input type="hidden" name="sort" value="{{ current_sort }}" />{% endif %}
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="small text-muted mb-1">Min Price (₹)</label>
+                <input type="number" name="min_price" class="form-control-custom py-1 px-2 small" placeholder="0" value="{{ min_price or '' }}" min="0" />
+              </div>
+              <div class="col-6">
+                <label class="small text-muted mb-1">Max Price (₹)</label>
+                <input type="number" name="max_price" class="form-control-custom py-1 px-2 small" placeholder="10000" value="{{ max_price or '' }}" min="0" />
+              </div>
+            </div>
+
+            <!-- In Stock Checkbox -->
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" name="in_stock" value="1" id="inStockCheck" {% if in_stock %}checked{% endif %}>
+              <label class="form-check-label small text-secondary" for="inStockCheck">
+                In Stock Items Only
+              </label>
+            </div>
+
+            <button type="submit" class="btn-primary-custom w-100 py-2 small justify-content-center">
+              Apply Filters
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- ── Products Grid Column ── -->
+      <div class="col-lg-9 col-md-8">
+        
+        {% if products %}
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
+            {% for product in products %}
             <div class="col">
-              <!-- Card wrapper — not an <a> so footer forms work correctly -->
-              <div class="product-card" id="product-card-{{ product.id }}">
+              <div class="product-card h-100 d-flex flex-column justify-content-between" id="product-card-{{ product.id }}">
+                
+                <div>
+                  <!-- Product Image -->
+                  <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="text-decoration-none">
+                    <div class="product-img-wrap">
+                      {% if product.image %}
+                        <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" />
+                      {% else %}
+                        <span class="product-placeholder-icon">🏅</span>
+                      {% endif %}
 
-                <!-- ── Image (clickable) ── -->
-                <a href="{{ url_for('products.product_detail', product_id=product.id) }}"
-                   style="display:block;text-decoration:none;color:inherit;">
-                  <div class="product-img-wrap">
-                    {% if product.image %}
-                      <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" />
-                    {% else %}
-                      <span class="product-placeholder-icon">🏅</span>
-                    {% endif %}
+                      {% if product.category %}
+                        <span class="product-badge badge-category">{{ product.category }}</span>
+                      {% endif %}
 
-                    <!-- Badges -->
-                    {% if product.category %}
-                      <span class="product-badge badge-category">{{ product.category }}</span>
-                    {% endif %}
-                    {% if not product.in_stock %}
-                      <span class="product-badge badge-out-of-stock"
-                            style="top:0.7rem;left:auto;right:0.7rem;">
-                        Out of Stock
-                      </span>
-                    {% endif %}
-                  </div>
-
-                  <!-- ── Body (clickable) ── -->
-                  <div class="product-body">
-                    {% if product.category %}
-                      <span class="product-category-tag">{{ product.category }}</span>
-                    {% endif %}
-                    <h5 class="product-name" style="margin-bottom: 0.3rem;">{{ product.name }}</h5>
-                    <div style="display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.5rem;">
-                      <div style="color: #fbbf24; font-size: 0.85rem;">
-                        {% set avg_rating = product.average_rating|round|int %}
-                        {% for i in range(1, 6) %}
-                          {% if i <= avg_rating %}
-                            <i class="bi bi-star-fill"></i>
-                          {% else %}
-                            <i class="bi bi-star"></i>
-                          {% endif %}
-                        {% endfor %}
-                      </div>
-                      <span style="color: var(--text-muted); font-size: 0.75rem;">({{ product.total_reviews }})</span>
+                      {% if not product.in_stock %}
+                        <span class="product-badge badge-out-of-stock" style="top:0.7rem;left:auto;right:0.7rem;">Out of Stock</span>
+                      {% elif product.is_low_stock %}
+                        <span class="product-badge badge-low-stock" style="top:0.7rem;left:auto;right:0.7rem;">Only {{ product.stock }} Left</span>
+                      {% endif %}
                     </div>
-                    {% if product.description %}
-                      <p class="product-description">{{ product.description }}</p>
-                    {% endif %}
-                  </div>
-                </a>
+                  </a>
 
-                <!-- ── Footer (price + Add to Cart) ── -->
-                <div class="product-footer" style="flex-wrap:wrap;gap:0.6rem; position: relative;">
-                  {% set in_wishlist = False %}
-                  {% if current_user.is_authenticated %}
-                    {% set in_wishlist = current_user.wishlist_items.filter_by(product_id=product.id).first() is not none %}
-                  {% endif %}
-                  
-                  <div style="position: absolute; top: -35px; right: 10px; z-index: 10;">
-                    {% if current_user.is_authenticated %}
-                      {% if in_wishlist %}
-                        <form method="POST" action="{{ url_for('wishlist.remove', product_id=product.id) }}" style="display:inline;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                          <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--accent);">
-                            <i class="bi bi-heart-fill"></i>
+                  <!-- Product Content -->
+                  <div class="product-body">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="product-category-tag mb-0">{{ product.category or 'Sport' }}</span>
+
+                      <!-- Wishlist Icon Toggle -->
+                      {% if current_user.is_authenticated %}
+                        {% set in_wishlist = current_user.wishlist_items.filter_by(product_id=product.id).first() is not none %}
+                        <form method="POST" action="{% if in_wishlist %}{{ url_for('wishlist.remove', product_id=product.id) }}{% else %}{{ url_for('wishlist.add', product_id=product.id) }}{% endif %}" class="d-inline">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <button type="submit" class="btn btn-sm p-1 border-0" title="{% if in_wishlist %}Remove from Wishlist{% else %}Save to Wishlist{% endif %}">
+                            <i class="bi {% if in_wishlist %}bi-heart-fill text-danger{% else %}bi-heart text-secondary{% endif %} fs-6"></i>
                           </button>
                         </form>
                       {% else %}
-                        <form method="POST" action="{{ url_for('wishlist.add', product_id=product.id) }}" style="display:inline;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                          <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
-                            <i class="bi bi-heart"></i>
-                          </button>
-                        </form>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-sm p-1 border-0 text-secondary" title="Sign in to save">
+                          <i class="bi bi-heart fs-6"></i>
+                        </a>
                       {% endif %}
-                    {% else %}
-                      <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-light rounded-circle shadow-sm" style="color:var(--text-muted);">
-                        <i class="bi bi-heart"></i>
+                    </div>
+
+                    <h5 class="product-name">
+                      <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="text-white text-decoration-none">
+                        {{ product.name }}
                       </a>
+                    </h5>
+
+                    <!-- Star Rating Display -->
+                    <div class="d-flex align-items-center gap-1 my-2">
+                      <div class="text-warning small">
+                        {% set avg_rating = product.average_rating|round|int %}
+                        {% for i in range(1, 6) %}
+                          {% if i <= avg_rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star"></i>{% endif %}
+                        {% endfor %}
+                      </div>
+                      <span class="text-muted" style="font-size: 0.75rem;">({{ product.total_reviews }})</span>
+                    </div>
+
+                    {% if product.description %}
+                      <p class="text-secondary small mb-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;">
+                        {{ product.description }}
+                      </p>
                     {% endif %}
                   </div>
+                </div>
 
-                  <!-- Price + stock -->
-                  <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                    {% if product.effective_price < product.price %}
-                    <span class="product-price text-muted text-decoration-line-through me-1" style="font-size:0.85rem;">₹{{ "%.2f"|format(product.price) }}</span>
-                    <span class="product-price text-danger">₹{{ "%.2f"|format(product.effective_price) }}</span>
-                    {% else %}
-                    <span class="product-price">{{ product.formatted_price }}</span>
-                    {% endif %}
+                <!-- Footer & Cart Action -->
+                <div class="product-body pt-0 mt-auto">
+                  <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-10">
+                    <div>
+                      {% if product.effective_price < product.price %}
+                        <div class="text-muted text-decoration-line-through small" style="font-size:0.75rem;">₹{{ "%.2f"|format(product.price) }}</div>
+                        <div class="product-price text-warning fw-bold mb-0">₹{{ "%.2f"|format(product.effective_price) }}</div>
+                      {% else %}
+                        <div class="product-price fw-bold mb-0">{{ product.formatted_price }}</div>
+                      {% endif %}
+                    </div>
+
                     {% if product.in_stock %}
-                      <span class="product-stock">
-                        <i class="bi bi-check-circle-fill" style="color:var(--success);"></i>
-                        {{ product.stock }} in stock
-                      </span>
-                    {% else %}
-                      <span class="product-stock low">
-                        <i class="bi bi-x-circle-fill"></i> Out of stock
-                      </span>
-                    {% endif %}
-                  </div>
-
-                  <!-- Add to Cart / Login / Disabled -->
-                  {% if product.in_stock %}
-                    {% if current_user.is_authenticated %}
-                      <form method="POST"
-                            action="{{ url_for('cart.add', product_id=product.id) }}"
-                            id="cart-form-{{ product.id }}"
-                            style="display:inline;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="quantity" value="1" />
-                        <button type="submit"
-                                class="btn-accent-custom"
-                                id="add-to-cart-{{ product.id }}"
-                                style="padding:0.45rem 1rem;font-size:0.82rem;
-                                       box-shadow:none;gap:0.3rem;">
-                          <i class="bi bi-cart-plus"></i> Add to Cart
+                      <form method="POST" action="{{ url_for('cart.add', product_id=product.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn-primary-custom py-1 px-3 small" style="font-size:0.8rem;">
+                          <i class="bi bi-cart-plus"></i> Add
                         </button>
                       </form>
                     {% else %}
-                      <a href="{{ url_for('auth.login', next=request.path) }}"
-                         class="btn-accent-custom"
-                         id="login-to-buy-{{ product.id }}"
-                         style="padding:0.45rem 1rem;font-size:0.82rem;
-                                box-shadow:none;gap:0.3rem;text-decoration:none;">
-                        <i class="bi bi-box-arrow-in-right"></i> Login to Buy
-                      </a>
+                      <button class="btn btn-sm btn-secondary disabled py-1 px-2" style="font-size:0.75rem;">Sold Out</button>
                     {% endif %}
-                  {% else %}
-                    <button class="btn-accent-custom"
-                            disabled
-                            id="out-of-stock-{{ product.id }}"
-                            style="padding:0.45rem 1rem;font-size:0.82rem;
-                                   box-shadow:none;gap:0.3rem;opacity:0.4;cursor:not-allowed;">
-                      <i class="bi bi-cart-x"></i> Out of Stock
-                    </button>
-                  {% endif %}
-
+                  </div>
                 </div>
+
               </div>
             </div>
-          {% endfor %}
-        </div>
+            {% endfor %}
+          </div>
 
-        <!-- ── Pagination ── -->
-        {% if pagination.pages > 1 %}
-        <nav aria-label="Product pagination" class="mt-5">
-          <ul class="pagination justify-content-center custom-pagination">
-            {% if pagination.has_prev %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('products.products', page=pagination.prev_num, category=active_category or None, q=search_query or None, sort=current_sort or None) }}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-              <span class="page-link">&laquo;</span>
-            </li>
-            {% endif %}
-
-            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-              {% if page_num %}
-                {% if page_num == pagination.page %}
-                  <li class="page-item active" aria-current="page">
-                    <span class="page-link">{{ page_num }}</span>
-                  </li>
-                {% else %}
+          <!-- Pagination -->
+          {% if pagination.pages > 1 %}
+          <div class="d-flex justify-content-center mt-5">
+            <nav aria-label="Catalog Page Navigation">
+              <ul class="pagination pagination-custom gap-1">
+                {% if pagination.has_prev %}
                   <li class="page-item">
-                    <a class="page-link" href="{{ url_for('products.products', page=page_num, category=active_category or None, q=search_query or None, sort=current_sort or None) }}">{{ page_num }}</a>
+                    <a class="page-link" href="{{ url_for('products.products', page=pagination.prev_num, category=active_category or None, q=search_query or None, sort=current_sort, min_price=min_price, max_price=max_price, in_stock=1 if in_stock else None) }}">
+                      &laquo; Previous
+                    </a>
                   </li>
                 {% endif %}
-              {% else %}
-                <li class="page-item disabled"><span class="page-link">...</span></li>
-              {% endif %}
-            {% endfor %}
 
-            {% if pagination.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('products.products', page=pagination.next_num, category=active_category or None, q=search_query or None, sort=current_sort or None) }}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-              <span class="page-link">&raquo;</span>
-            </li>
-            {% endif %}
-          </ul>
-        </nav>
+                {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                  {% if p %}
+                    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                      <a class="page-link" href="{{ url_for('products.products', page=p, category=active_category or None, q=search_query or None, sort=current_sort, min_price=min_price, max_price=max_price, in_stock=1 if in_stock else None) }}">
+                        {{ p }}
+                      </a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                  {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="{{ url_for('products.products', page=pagination.next_num, category=active_category or None, q=search_query or None, sort=current_sort, min_price=min_price, max_price=max_price, in_stock=1 if in_stock else None) }}">
+                      Next &raquo;
+                    </a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+
+        {% else %}
+          <!-- Empty State -->
+          <div class="empty-state-box">
+            <div class="empty-state-icon text-muted">🔍</div>
+            <h3 class="empty-state-title">No Sports Gear Found</h3>
+            <p class="empty-state-text">
+              We couldn't find any products matching your selected filters. Try broadening your criteria or reset the filters.
+            </p>
+            <a href="{{ url_for('products.products') }}" class="btn-primary-custom">
+              <i class="bi bi-arrow-counterclockwise"></i> Reset All Filters
+            </a>
+          </div>
         {% endif %}
 
-      {% else %}
-        <!-- Empty State -->
-        <div class="empty-state">
-          <div class="empty-state-icon">🔍</div>
-          <h4>No products found</h4>
-          <p>
-            {% if search_query %}
-              No results for "<strong>{{ search_query }}</strong>".
-              <a href="{{ url_for('products.products') }}">Clear search</a>
-            {% elif active_category %}
-              No products in "{{ active_category }}" yet.
-              <a href="{{ url_for('products.products') }}">Browse all</a>
-            {% else %}
-              No products have been added yet. Check back soon!
-            {% endif %}
-          </p>
-        </div>
-      {% endif %}
+      </div>
 
     </div>
+
   </div>
 </div>
 {% endblock %}

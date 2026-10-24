@@ -89,6 +89,15 @@ def cancel_order(order_id):
         item.product.stock += item.quantity
 
     order.status = "cancelled"
+
+    # Sync payment record
+    if order.payment:
+        from app.models import PaymentStatus
+        if order.payment.payment_status == PaymentStatus.PAID.value:
+            order.payment.payment_status = PaymentStatus.REFUNDED.value
+        else:
+            order.payment.payment_status = PaymentStatus.CANCELLED.value
+
     history = OrderStatusHistory(
         order_id = order.id,
         status   = "cancelled",
@@ -96,6 +105,13 @@ def cancel_order(order_id):
     )
     db.session.add(history)
     db.session.commit()
+
+    # Trigger cancellation notification email
+    try:
+        from app.helpers.email_helper import send_order_cancelled_email
+        send_order_cancelled_email(order.user, order)
+    except Exception:
+        pass
 
     flash(f"Order #{order.id} has been cancelled. Stock restored.", "info")
     return redirect(url_for("orders.order_history"))

@@ -190,7 +190,7 @@ class Product(db.Model):
                     if discounted < best_price:
                         best_price = discounted
 
-        return max(0.0, round(best_price, 2))
+        return Decimal(str(max(0.0, round(best_price, 2))))
 
     @property
     def formatted_effective_price(self):
