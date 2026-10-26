@@ -70,10 +70,11 @@ def edit_flashsale(fs_id):
         db.session.commit()
         flash('Flash sale updated.', 'success')
         return redirect(url_for('flashsale.list_flashsales'))
-    # pre-fill dates
-    form.start_time.data = flashsale.start_time.strftime('%Y-%m-%d %H:%M')
-    form.end_time.data = flashsale.end_time.strftime('%Y-%m-%d %H:%M')
+    if request.method == "GET":
+        form.start_time.data = flashsale.start_time.strftime('%Y-%m-%d %H:%M')
+        form.end_time.data = flashsale.end_time.strftime('%Y-%m-%d %H:%M')
     return render_template('admin_flashsale_form.html', form=form, title='Edit Flash Sale – SportsHub')
+
 
 @flashsale_bp.route('/delete/<int:fs_id>', methods=['POST'])
 @login_required

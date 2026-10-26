@@ -76,10 +76,11 @@ def edit_promotion(promo_id):
         db.session.commit()
         flash('Promotion updated.', 'success')
         return redirect(url_for('promotion.list_promotions'))
-    # pre‑fill date fields for display
-    form.start_date.data = promo.start_date.strftime('%Y-%m-%d %H:%M')
-    form.end_date.data = promo.end_date.strftime('%Y-%m-%d %H:%M')
+    if request.method == "GET":
+        form.start_date.data = promo.start_date.strftime('%Y-%m-%d %H:%M')
+        form.end_date.data = promo.end_date.strftime('%Y-%m-%d %H:%M')
     return render_template('admin_promotion_form.html', form=form, title='Edit Promotion – SportsHub')
+
 
 @promotion_bp.route('/delete/<int:promo_id>', methods=['POST'])
 @login_required

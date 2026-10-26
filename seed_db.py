@@ -6,7 +6,7 @@ Run with: python seed_db.py
 """
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 # Ensure app can be imported
@@ -18,6 +18,10 @@ from app import create_app, db
 from app.models import User, Product, Coupon, Promotion, FlashSale, Review, CouponType
 
 app = create_app()
+
+def _utc_now():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
 
 def seed():
     with app.app_context():
@@ -186,7 +190,7 @@ def seed():
                 "max_discount": Decimal("500.00"),
                 "usage_limit": None,
                 "is_active": True,
-                "expires_at": datetime.utcnow() + timedelta(days=90),
+                "expires_at": _utc_now() + timedelta(days=90),
             },
             {
                 "code": "SPORT500",
@@ -197,7 +201,7 @@ def seed():
                 "max_discount": None,
                 "usage_limit": 500,
                 "is_active": True,
-                "expires_at": datetime.utcnow() + timedelta(days=60),
+                "expires_at": _utc_now() + timedelta(days=60),
             },
             {
                 "code": "FITNESS20",
@@ -208,7 +212,7 @@ def seed():
                 "max_discount": Decimal("1000.00"),
                 "usage_limit": 200,
                 "is_active": True,
-                "expires_at": datetime.utcnow() + timedelta(days=45),
+                "expires_at": _utc_now() + timedelta(days=45),
             },
         ]
 
@@ -224,7 +228,7 @@ def seed():
         # ── 4. Seed Active Flash Sale ─────────────────────────────────────────────
         print("⚡ Checking flash sales...")
         active_fs = FlashSale.query.filter(
-            FlashSale.end_time >= datetime.utcnow()
+            FlashSale.end_time >= _utc_now()
         ).first()
         if not active_fs:
             first_product = Product.query.first()
@@ -232,8 +236,8 @@ def seed():
                 fs = FlashSale(
                     product_id=first_product.id,
                     discount_value=Decimal("25.00"),
-                    start_time=datetime.utcnow() - timedelta(hours=2),
-                    end_time=datetime.utcnow() + timedelta(hours=36),
+                    start_time=_utc_now() - timedelta(hours=2),
+                    end_time=_utc_now() + timedelta(hours=36),
                 )
                 db.session.add(fs)
                 print(f"   ✅ Created active 25% Flash Sale on '{first_product.name}' (ends in 36h)")
@@ -255,7 +259,7 @@ def seed():
                     product_id=pid,
                     rating=rating,
                     review_text=text,
-                    created_at=datetime.utcnow() - timedelta(days=2),
+                    created_at=_utc_now() - timedelta(days=2),
                 )
                 db.session.add(rev)
                 print(f"   ✅ Added sample review for product ID {pid}")

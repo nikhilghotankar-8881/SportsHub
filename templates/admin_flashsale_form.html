@@ -1,67 +1,96 @@
 {% extends "base.html" %}
-
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="dashboard-wrapper">
+
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-lightning-charge-fill" style="color:var(--primary);"></i>
+        <span class="text-gradient">{{ 'Edit' if 'Edit' in title else 'Add' }} Flash Sale</span>
+      </h1>
+      <p class="page-subtitle">Configure limited-time high-discount offers for sports equipment.</p>
+    </div>
+    <a href="{{ url_for('flashsale.list_flashsales') }}" class="btn-outline-custom" style="text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> Back to Flash Sales
+    </a>
+  </div>
+
   <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-white border-0 pt-4 pb-0">
-          <h3 class="mb-0">{{ title }}</h3>
-        </div>
-        <div class="card-body">
-          <form method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {{ form.hidden_tag() }}
-            
-            <div class="mb-3">
-              {{ form.product_id.label(class="form-label fw-bold") }}
-              {{ form.product_id(class="form-select") }}
-              {% for error in form.product_id.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
-              {% endfor %}
-            </div>
+    <div class="col-lg-7">
+      <div class="dashboard-card">
 
-            <div class="mb-3">
-              {{ form.discount_value.label(class="form-label fw-bold") }}
-              <div class="input-group">
-                {{ form.discount_value(class="form-control") }}
-                <span class="input-group-text">%</span>
-              </div>
-              {% for error in form.discount_value.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
-              {% endfor %}
-            </div>
+        <form method="POST" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {{ form.hidden_tag() }}
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                {{ form.start_time.label(class="form-label fw-bold") }}
-                {{ form.start_time(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
+          <!-- Product Selection -->
+          <div class="form-group mb-3">
+            <label class="form-label" for="product_id">
+              <i class="bi bi-box-seam"></i> Select Product <span style="color:#ef4444;">*</span>
+            </label>
+            {{ form.product_id(class="form-control-custom") }}
+            {% for error in form.product_id.errors %}
+              <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Discount % -->
+          <div class="form-group mb-3">
+            <label class="form-label" for="discount_value">
+              <i class="bi bi-percent"></i> Discount Percentage (%) <span style="color:#ef4444;">*</span>
+            </label>
+            <div class="input-group">
+              {{ form.discount_value(class="form-control-custom", placeholder="e.g. 25 for 25% OFF") }}
+              <span class="input-group-text" style="background:var(--bg-card-2);border-color:var(--border);color:var(--text-secondary);font-weight:700;">%</span>
+            </div>
+            {% for error in form.discount_value.errors %}
+              <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Start and End Time -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="start_time">
+                  <i class="bi bi-clock"></i> Start Time (YYYY-MM-DD HH:MM) <span style="color:#ef4444;">*</span>
+                </label>
+                {{ form.start_time(class="form-control-custom", placeholder="YYYY-MM-DD HH:MM") }}
                 {% for error in form.start_time.errors %}
-                  <div class="text-danger small mt-1">{{ error }}</div>
+                  <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
                 {% endfor %}
               </div>
-              <div class="col-md-6 mb-3">
-                {{ form.end_time.label(class="form-label fw-bold") }}
-                {{ form.end_time(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="end_time">
+                  <i class="bi bi-clock-history"></i> End Time (YYYY-MM-DD HH:MM) <span style="color:#ef4444;">*</span>
+                </label>
+                {{ form.end_time(class="form-control-custom", placeholder="YYYY-MM-DD HH:MM") }}
                 {% for error in form.end_time.errors %}
-                  <div class="text-danger small mt-1">{{ error }}</div>
+                  <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
                 {% endfor %}
               </div>
             </div>
+          </div>
 
-            <div class="d-grid mt-4">
-              {{ form.submit(class="btn btn-primary-custom btn-lg") }}
-            </div>
-            
-          </form>
-        </div>
-      </div>
-      <div class="text-center mt-3">
-        <a href="{{ url_for('flashsale.list_flashsales') }}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Back to Flash Sales</a>
+          <!-- Submit & Cancel Buttons -->
+          <div class="d-flex gap-3 align-items-center">
+            <button type="submit" class="btn-primary-custom px-4 py-2">
+              <i class="bi bi-lightning-charge"></i> Save Flash Sale
+            </button>
+            <a href="{{ url_for('flashsale.list_flashsales') }}" class="btn-outline-custom px-4 py-2" style="text-decoration:none;">
+              Cancel
+            </a>
+          </div>
+
+        </form>
+
       </div>
     </div>
   </div>
+
 </div>
 {% endblock %}

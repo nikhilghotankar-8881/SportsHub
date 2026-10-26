@@ -1,48 +1,136 @@
 {% extends "base.html" %}
-
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <h2 class="mb-4">{{ 'Edit' if form.name.data else 'Add' }} Promotion</h2>
-  <form method="POST" novalidate>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    {{ form.hidden_tag() }}
-    <div class="mb-3">
-      {{ form.name.label(class="form-label") }}
-      {{ form.name(class="form-control", placeholder="Promotion Name") }}
-      {% for error in form.name.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+<div class="dashboard-wrapper">
+
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-megaphone" style="color:var(--primary);"></i>
+        <span class="text-gradient">{{ 'Edit' if form.name.data else 'Add' }} Promotion</span>
+      </h1>
+      <p class="page-subtitle">{{ 'Update promotion campaign settings below.' if form.name.data else 'Create a promotional campaign with time windows and usage limits.' }}</p>
     </div>
-    <div class="mb-3">
-      {{ form.description.label(class="form-label") }}
-      {{ form.description(class="form-control", rows="3") }}
+    <a href="{{ url_for('promotion.list_promotions') }}" class="btn-outline-custom" style="text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> Back to Promotions
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="dashboard-card">
+
+        <form method="POST" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {{ form.hidden_tag() }}
+
+          <!-- Promotion Name -->
+          <div class="form-group mb-3">
+            <label class="form-label" for="name">
+              <i class="bi bi-card-heading"></i> Promotion Name <span style="color:#ef4444;">*</span>
+            </label>
+            {{ form.name(class="form-control-custom", placeholder="e.g. Monsoon Mega Sale 2026") }}
+            {% for error in form.name.errors %}
+              <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Description -->
+          <div class="form-group mb-3">
+            <label class="form-label" for="description">
+              <i class="bi bi-card-text"></i> Description
+            </label>
+            {{ form.description(class="form-control-custom", rows="3", placeholder="Brief description of terms and products included...") }}
+            {% for error in form.description.errors %}
+              <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Promo Type & Discount Value -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="promo_type">
+                  <i class="bi bi-percent"></i> Discount Type <span style="color:#ef4444;">*</span>
+                </label>
+                {{ form.promo_type(class="form-control-custom") }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="discount_value">
+                  <i class="bi bi-cash"></i> Discount Value <span style="color:#ef4444;">*</span>
+                </label>
+                {{ form.discount_value(class="form-control-custom", placeholder="e.g. 15 for 15% or 300 for ₹300") }}
+                {% for error in form.discount_value.errors %}
+                  <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Max Discount & Usage Limit -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="max_discount">
+                  <i class="bi bi-shield-lock"></i> Max Discount Cap (₹)
+                </label>
+                {{ form.max_discount(class="form-control-custom", placeholder="Optional ceiling for % discounts") }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="usage_limit">
+                  <i class="bi bi-people"></i> Usage Limit
+                </label>
+                {{ form.usage_limit(class="form-control-custom", placeholder="Optional max total uses") }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Start Date & End Date -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="start_date">
+                  <i class="bi bi-calendar-event"></i> Start Date & Time <span style="color:#ef4444;">*</span>
+                </label>
+                {{ form.start_date(class="form-control-custom", placeholder="YYYY-MM-DD HH:MM") }}
+                {% for error in form.start_date.errors %}
+                  <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="end_date">
+                  <i class="bi bi-calendar-check"></i> End Date & Time <span style="color:#ef4444;">*</span>
+                </label>
+                {{ form.end_date(class="form-control-custom", placeholder="YYYY-MM-DD HH:MM") }}
+                {% for error in form.end_date.errors %}
+                  <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex gap-3 align-items-center">
+            <button type="submit" class="btn-primary-custom px-4 py-2">
+              <i class="bi bi-check2-circle"></i> Save Promotion
+            </button>
+            <a href="{{ url_for('promotion.list_promotions') }}" class="btn-outline-custom px-4 py-2" style="text-decoration:none;">
+              Cancel
+            </a>
+          </div>
+
+        </form>
+
+      </div>
     </div>
-    <div class="mb-3">
-      {{ form.promo_type.label(class="form-label") }}
-      {{ form.promo_type(class="form-select") }}
-    </div>
-    <div class="mb-3">
-      {{ form.discount_value.label(class="form-label") }}
-      {{ form.discount_value(class="form-control", placeholder="e.g., 10 for 10% or 500 for ₹500") }}
-    </div>
-    <div class="mb-3">
-      {{ form.max_discount.label(class="form-label") }}
-      {{ form.max_discount(class="form-control", placeholder="Optional max discount for % type") }}
-    </div>
-    <div class="mb-3">
-      {{ form.start_date.label(class="form-label") }}
-      {{ form.start_date(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
-    </div>
-    <div class="mb-3">
-      {{ form.end_date.label(class="form-label") }}
-      {{ form.end_date(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
-    </div>
-    <div class="mb-3">
-      {{ form.usage_limit.label(class="form-label") }}
-      {{ form.usage_limit(class="form-control", placeholder="Optional usage limit") }}
-    </div>
-    <button type="submit" class="btn btn-primary-custom">{{ form.submit.label.text }}</button>
-    <a href="{{ url_for('promotion.list_promotions') }}" class="btn btn-secondary ms-2">Cancel</a>
-  </form>
+  </div>
+
 </div>
 {% endblock %}

@@ -1,50 +1,100 @@
 {% extends "base.html" %}
-
 {% block title %}Manage Promotions – SportsHub{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <h2 class="mb-4">Promotions</h2>
-  <a href="{{ url_for('promotion.add_promotion') }}" class="btn btn-primary-custom mb-3">
-    <i class="bi bi-plus-circle"></i> Add Promotion
-  </a>
+<div class="dashboard-wrapper">
+
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-megaphone" style="color:var(--primary);"></i>
+        Promotion <span class="text-gradient">Management</span>
+      </h1>
+      <p class="page-subtitle">Configure promotional discount campaigns across sports categories and products.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('promotion.promotion_reports') }}" class="btn-outline-custom" style="text-decoration:none;">
+        <i class="bi bi-bar-chart"></i> Reports
+      </a>
+      <a href="{{ url_for('promotion.add_promotion') }}" class="btn-primary-custom" style="text-decoration:none;">
+        <i class="bi bi-plus-circle"></i> Add Promotion
+      </a>
+    </div>
+  </div>
+
   {% if promotions %}
-  <table class="table table-hover">
-    <thead class="table-light">
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Discount</th>
-        <th>Period</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for promo in promotions %}
-      <tr>
-        <td>{{ promo.name }}</td>
-        <td>{{ promo.promo_type|title }}</td>
-        <td>
-          {% if promo.promo_type == 'percentage' %}
-            {{ promo.discount_value }}%{% if promo.max_discount %} (max ₹{{ promo.max_discount }}){% endif %}
-          {% else %}
-            ₹{{ promo.discount_value }}
-          {% endif %}
-        </td>
-        <td>{{ promo.start_date.strftime('%d %b %Y') }} – {{ promo.end_date.strftime('%d %b %Y') }}</td>
-        <td>
-          <a href="{{ url_for('promotion.edit_promotion', promo_id=promo.id) }}" class="btn btn-sm btn-outline-custom"><i class="bi bi-pencil"></i></a>
-          <form method="POST" action="{{ url_for('promotion.delete_promotion', promo_id=promo.id) }}" style="display:inline;" onsubmit="return confirm('Delete promotion?');">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="dashboard-card">
+    <div class="table-responsive">
+      <table class="table" style="color:var(--text-primary);margin:0;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Name</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Type</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Discount</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Period</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Status</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for promo in promotions %}
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:12px 8px;font-weight:600;">
+              {{ promo.name }}
+              {% if promo.description %}
+                <div class="text-muted small" style="font-size:0.75rem;">{{ promo.description }}</div>
+              {% endif %}
+            </td>
+            <td style="padding:12px 8px;">
+              <span class="badge bg-secondary bg-opacity-50 text-white" style="font-size:0.75rem;">
+                {{ promo.promo_type|title }}
+              </span>
+            </td>
+            <td style="padding:12px 8px;font-weight:700;color:var(--success);">
+              {% if promo.promo_type == 'percentage' %}
+                {{ promo.discount_value }}%{% if promo.max_discount %} <small class="text-muted">(max ₹{{ promo.max_discount }})</small>{% endif %}
+              {% else %}
+                ₹{{ promo.discount_value }}
+              {% endif %}
+            </td>
+            <td style="padding:12px 8px;font-size:0.82rem;color:var(--text-secondary);">
+              {{ promo.start_date.strftime('%d %b %Y') }} &ndash; {{ promo.end_date.strftime('%d %b %Y') }}
+            </td>
+            <td style="padding:12px 8px;">
+              {% if promo.is_current() %}
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">Active</span>
+              {% else %}
+                <span class="badge bg-secondary bg-opacity-25 text-muted border border-secondary border-opacity-25">Inactive</span>
+              {% endif %}
+            </td>
+            <td style="padding:12px 8px;">
+              <div class="d-flex gap-2">
+                <a href="{{ url_for('promotion.edit_promotion', promo_id=promo.id) }}" class="btn btn-sm btn-outline-custom" title="Edit Promotion">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="POST" action="{{ url_for('promotion.delete_promotion', promo_id=promo.id) }}" style="display:inline;" onsubmit="return confirm('Delete this promotion?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Promotion">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
   {% else %}
-    <p class="text-muted">No promotions have been created yet.</p>
+  <div class="dashboard-card text-center py-5">
+    <i class="bi bi-megaphone fs-1 text-muted d-block mb-3 opacity-50"></i>
+    <p class="text-muted mb-3">No promotional campaigns have been created yet.</p>
+    <a href="{{ url_for('promotion.add_promotion') }}" class="btn-primary-custom" style="text-decoration:none;display:inline-flex;">
+      <i class="bi bi-plus-circle"></i> Create First Promotion
+    </a>
+  </div>
   {% endif %}
+
 </div>
 {% endblock %}

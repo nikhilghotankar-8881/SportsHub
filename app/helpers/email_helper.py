@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def _send(subject: str, recipients: list, template_name: str, **context) -> bool:
     """Core send function — swallows all SMTP errors so the app never crashes."""
     if not current_app.config.get("MAIL_USERNAME"):
-        logger.warning(f"[Email] MAIL_USERNAME not configured — skipping email '{subject}'.")
+        logger.warning(f"[Email] MAIL_USERNAME not configured - skipping email '{subject}'.")
         return False
     try:
         html_body = render_template(f"emails/{template_name}", subject=subject, **context)

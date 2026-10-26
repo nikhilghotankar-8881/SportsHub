@@ -1,57 +1,91 @@
 {% extends "base.html" %}
-
 {% block title %}Manage Flash Sales – SportsHub{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Flash Sales</h2>
-    <a href="{{ url_for('flashsale.add_flashsale') }}" class="btn btn-primary-custom">
+<div class="dashboard-wrapper">
+
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-lightning-charge-fill" style="color:var(--primary);"></i>
+        Flash Sale <span class="text-gradient">Management</span>
+      </h1>
+      <p class="page-subtitle">Launch and monitor high-octane flash discounts across your catalog.</p>
+    </div>
+    <a href="{{ url_for('flashsale.add_flashsale') }}" class="btn-primary-custom" style="text-decoration:none;">
       <i class="bi bi-plus-circle"></i> Add Flash Sale
     </a>
   </div>
-  
+
   {% if flashsales %}
-  <div class="table-responsive">
-    <table class="table table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>Product</th>
-          <th>Discount</th>
-          <th>Start Time</th>
-          <th>End Time</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for fs in flashsales %}
-        <tr>
-          <td>{{ fs.product.name }}</td>
-          <td><span class="text-danger fw-bold">{{ fs.discount_value }}% OFF</span></td>
-          <td>{{ fs.start_time.strftime('%Y-%m-%d %I:%M %p') }}</td>
-          <td>{{ fs.end_time.strftime('%Y-%m-%d %I:%M %p') }}</td>
-          <td>
-            {% if fs.is_active() %}
-              <span class="badge bg-success">Active</span>
-            {% else %}
-              <span class="badge bg-secondary">Inactive</span>
-            {% endif %}
-          </td>
-          <td>
-            <a href="{{ url_for('flashsale.edit_flashsale', fs_id=fs.id) }}" class="btn btn-sm btn-outline-custom"><i class="bi bi-pencil"></i></a>
-            <form method="POST" action="{{ url_for('flashsale.delete_flashsale', fs_id=fs.id) }}" style="display:inline;" onsubmit="return confirm('Delete flash sale?');">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="dashboard-card">
+    <div class="table-responsive">
+      <table class="table" style="color:var(--text-primary);margin:0;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Product</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Discount</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Start Time</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">End Time</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Status</th>
+            <th style="color:var(--text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:12px 8px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fs in flashsales %}
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:12px 8px;font-weight:600;">
+              {{ fs.product.name }}
+              {% if fs.product.category %}
+                <span class="badge bg-secondary bg-opacity-25 text-white ms-2" style="font-size:0.7rem;">{{ fs.product.category }}</span>
+              {% endif %}
+            </td>
+            <td style="padding:12px 8px;">
+              <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 px-2 py-1 fw-bold" style="font-size:0.82rem;">
+                <i class="bi bi-lightning-charge-fill me-1"></i>{{ fs.discount_value }}% OFF
+              </span>
+            </td>
+            <td style="padding:12px 8px;font-size:0.82rem;color:var(--text-secondary);">
+              {{ fs.start_time.strftime('%d %b %Y, %I:%M %p') }}
+            </td>
+            <td style="padding:12px 8px;font-size:0.82rem;color:var(--text-secondary);">
+              {{ fs.end_time.strftime('%d %b %Y, %I:%M %p') }}
+            </td>
+            <td style="padding:12px 8px;">
+              {% if fs.is_active() %}
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">Live Now</span>
+              {% else %}
+                <span class="badge bg-secondary bg-opacity-25 text-muted border border-secondary border-opacity-25">Inactive / Ended</span>
+              {% endif %}
+            </td>
+            <td style="padding:12px 8px;">
+              <div class="d-flex gap-2">
+                <a href="{{ url_for('flashsale.edit_flashsale', fs_id=fs.id) }}" class="btn btn-sm btn-outline-custom" title="Edit Flash Sale">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="POST" action="{{ url_for('flashsale.delete_flashsale', fs_id=fs.id) }}" style="display:inline;" onsubmit="return confirm('Delete this flash sale?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Flash Sale">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
   {% else %}
-    <p class="text-muted">No flash sales have been created yet.</p>
+  <div class="dashboard-card text-center py-5">
+    <i class="bi bi-lightning-charge fs-1 text-muted d-block mb-3 opacity-50"></i>
+    <p class="text-muted mb-3">No active or scheduled flash sales found.</p>
+    <a href="{{ url_for('flashsale.add_flashsale') }}" class="btn-primary-custom" style="text-decoration:none;display:inline-flex;">
+      <i class="bi bi-plus-circle"></i> Create First Flash Sale
+    </a>
+  </div>
   {% endif %}
+
 </div>
 {% endblock %}

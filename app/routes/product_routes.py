@@ -7,8 +7,10 @@ from sqlalchemy import func
 products_bp = Blueprint("products", __name__, url_prefix="/products")
 
 
+@products_bp.route("")
 @products_bp.route("/")
 def products():
+
     """List all products with dynamic category filter, price filter, search, and sort."""
     category     = request.args.get("category", "").strip()
     search       = request.args.get("q", "").strip()

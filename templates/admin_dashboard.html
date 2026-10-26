@@ -340,6 +340,14 @@
              style="text-decoration:none;justify-content:center;">
             <i class="bi bi-tags"></i> Manage Coupons
           </a>
+          <a href="{{ url_for('flashsale.list_flashsales') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-lightning-charge"></i> Flash Sales
+          </a>
+          <a href="{{ url_for('promotion.list_promotions') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-megaphone"></i> Promotions
+          </a>
           <a href="{{ url_for('admin.users') }}" class="btn-outline-custom"
              style="text-decoration:none;justify-content:center;">
             <i class="bi bi-people"></i> View Users
@@ -362,6 +370,10 @@
           <a href="{{ url_for('admin.reviews') }}" class="btn-outline-custom"
              style="text-decoration:none;justify-content:center;">
             <i class="bi bi-star"></i> Reviews
+          </a>
+          <a href="{{ url_for('admin.inventory') }}" class="btn-outline-custom"
+             style="text-decoration:none;justify-content:center;">
+            <i class="bi bi-boxes"></i> Inventory
           </a>
         </div>
       </div>
