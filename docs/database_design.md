@@ -1,177 +1,206 @@
-# SportsHub Database Design
+# 🗄️ SportsHub — Comprehensive Database Design & Schema Specification
 
-## Overview
+## 1. Architectural Overview
 
-SportsHub is a Flask-based e-commerce platform for sports equipment. The database is designed using relational database principles and will be implemented using SQLAlchemy ORM with SQLite.
-
----
-
-# Entity Relationship Design
-
-## User
-
-Stores information about registered users and administrators.
-
-| Field         | Type     | Description           |
-| ------------- | -------- | --------------------- |
-| id            | Integer  | Primary Key           |
-| name          | String   | User Full Name        |
-| email         | String   | Unique Email Address  |
-| password_hash | String   | Encrypted Password    |
-| is_admin      | Boolean  | Admin Privileges      |
-| created_at    | DateTime | Account Creation Date |
+SportsHub uses **SQLAlchemy 2.x** with the **Application Factory** pattern. The application seamlessly supports dual database engines:
+- **Local Development:** SQLite (`instance/sportshub.db`) with automatic table initialization.
+- **Production:** PostgreSQL (Cloud serverless hosted on **Neon.tech**, **Supabase**, or **Render**) with connection pooling and SSL encryption (`sslmode=require`).
 
 ---
 
-## Product
+## 2. Entity Relationship Diagram (ERD)
 
-Stores all sports products available in the store.
-
-| Field       | Type     | Description           |
-| ----------- | -------- | --------------------- |
-| id          | Integer  | Primary Key           |
-| name        | String   | Product Name          |
-| description | Text     | Product Description   |
-| price       | Float    | Product Price         |
-| stock       | Integer  | Available Quantity    |
-| image       | String   | Product Image Path    |
-| category    | String   | Product Category      |
-| created_at  | DateTime | Product Creation Date |
-
----
-
-## CartItem
-
-Stores products added to a user's shopping cart.
-
-| Field      | Type    | Description           |
-| ---------- | ------- | --------------------- |
-| id         | Integer | Primary Key           |
-| user_id    | Integer | Foreign Key → User    |
-| product_id | Integer | Foreign Key → Product |
-| quantity   | Integer | Quantity Added        |
+```mermaid
+erDiagram
+    User ||--o{ Order : places
+    User ||--o{ CartItem : owns
+    User ||--o{ Wishlist : saves
+    User ||--o{ Review : writes
+    Product ||--o{ CartItem : contains
+    Product ||--o{ OrderItem : ordered_as
+    Product ||--o{ Wishlist : saved_in
+    Product ||--o{ Review : reviewed_in
+    Product ||--o{ FlashSale : discounted_by
+    Promotion ||--o{ PromotionProduct : targets
+    Promotion ||--o{ PromotionCategory : restricts
+    Order ||--|{ OrderItem : includes
+    Order ||--o{ OrderStatusHistory : tracks
+    Order ||--o| Payment : paid_via
+    User ||--o{ Contact : submits
+```
 
 ---
 
-## Order
+## 3. Data Dictionary & Table Schemas
 
-Stores order information after checkout.
+### 3.1 `users`
+Stores registered customers and store administrators.
 
-| Field       | Type     | Description                 |
-| ----------- | -------- | --------------------------- |
-| id          | Integer  | Primary Key                 |
-| user_id     | Integer  | Foreign Key → User          |
-| total_price | Float    | Order Total                 |
-| status      | String   | Pending, Shipped, Delivered |
-| created_at  | DateTime | Order Date                  |
-
----
-
-## OrderItem
-
-Stores individual products inside an order.
-
-| Field      | Type    | Description                    |
-| ---------- | ------- | ------------------------------ |
-| id         | Integer | Primary Key                    |
-| order_id   | Integer | Foreign Key → Order            |
-| product_id | Integer | Foreign Key → Product          |
-| quantity   | Integer | Purchased Quantity             |
-| price      | Float   | Product Price at Purchase Time |
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Unique user identifier |
+| `name` | String(100) | NOT NULL | Full name of the user |
+| `email` | String(120) | NOT NULL, Unique, Indexed | Login email address |
+| `password_hash` | String(255) | NOT NULL | Werkzeug scrypt/pbkdf2 hash |
+| `is_admin` | Boolean | NOT NULL, Default: `False` | Admin privileges flag |
+| `created_at` | DateTime | NOT NULL, Default: UTC | Account creation timestamp |
 
 ---
 
-# Relationships
+### 3.2 `products`
+The core sports gear and athletic equipment catalog.
 
-## User Relationships
-
-A User can have:
-
-* Multiple Cart Items
-* Multiple Orders
-
-Relationship:
-
-User (1) → (Many) CartItems
-
-User (1) → (Many) Orders
-
----
-
-## Product Relationships
-
-A Product can appear in:
-
-* Multiple Cart Items
-* Multiple Order Items
-
-Relationship:
-
-Product (1) → (Many) CartItems
-
-Product (1) → (Many) OrderItems
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Unique product ID |
+| `name` | String(200) | NOT NULL, Indexed | Equipment/Product title |
+| `category` | String(100) | Nullable, Indexed | Category (Football, Cricket, etc.) |
+| `price` | Numeric(12, 2) | NOT NULL | Regular selling price (₹) |
+| `stock` | Integer | NOT NULL, Default: 0 | Available physical inventory |
+| `low_stock_threshold` | Integer | NOT NULL, Default: 5 | Alert threshold for low inventory |
+| `image` | String(500) | Nullable | Unsplash CDN URL or local static path |
+| `description` | Text | Nullable | Full markdown/HTML product overview |
+| `created_at` | DateTime | NOT NULL, Default: UTC | Product cataloging timestamp |
 
 ---
 
-## Order Relationships
+### 3.3 `cart_items`
+Persistent shopping cart for authenticated users.
 
-An Order can contain:
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Unique cart item ID |
+| `user_id` | Integer | Foreign Key → `users.id`, NOT NULL | Owner user ID |
+| `product_id` | Integer | Foreign Key → `products.id`, NOT NULL | Target product ID |
+| `quantity` | Integer | NOT NULL, Default: 1 | Quantity selected |
 
-* Multiple Order Items
-
-Relationship:
-
-Order (1) → (Many) OrderItems
-
----
-
-# ER Diagram
-
-User
-│
-├── CartItems
-│       │
-│       └── Product
-│
-└── Orders
-│
-└── OrderItems
-│
-└── Product
+*Constraint:* `UniqueConstraint('user_id', 'product_id', name='uq_cart_user_product')`
 
 ---
 
-# Foreign Key Summary
+### 3.4 `orders`
+Snapshot of purchases with billing and delivery addresses.
 
-CartItem.user_id → User.id
-
-CartItem.product_id → Product.id
-
-Order.user_id → User.id
-
-OrderItem.order_id → Order.id
-
-OrderItem.product_id → Product.id
-
----
-
-# Future Enhancements
-
-The following entities can be added later:
-
-* Category
-* Wishlist
-* Reviews & Ratings
-* Coupons
-* Payments
-* Shipping Address
-* Product Images
-* Inventory Logs
-
-These features are intentionally excluded from Version 1.0 to keep the project focused and beginner-friendly.
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Order reference ID |
+| `user_id` | Integer | Foreign Key → `users.id`, NOT NULL | Buyer user ID |
+| `status` | String(30) | NOT NULL, Default: `placed` | `OrderStatus` enum value |
+| `total_amount` | Numeric(12, 2) | NOT NULL | Final payable amount (incl. GST) |
+| `discount_amount` | Numeric(12, 2) | NOT NULL, Default: 0 | Total coupon/promotion discount |
+| `coupon_code` | String(50) | Nullable | Applied coupon code string |
+| `gst_amount` | Numeric(12, 2) | NOT NULL, Default: 0 | 18% GST portion |
+| `shipping_name` | String(150) | NOT NULL | Recipient full name |
+| `shipping_address` | String(300) | NOT NULL | Street / Delivery address |
+| `shipping_city` | String(100) | NOT NULL | City name |
+| `shipping_phone` | String(20) | NOT NULL | Contact phone number |
+| `created_at` | DateTime | NOT NULL, Default: UTC | Order submission timestamp |
+| `updated_at` | DateTime | NOT NULL, Default: UTC | Last modification timestamp |
 
 ---
 
-# Version
+### 3.5 `order_items`
+Line items capturing product and historical purchase price.
 
-SportsHub Database Design v1.0
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Order line ID |
+| `order_id` | Integer | Foreign Key → `orders.id`, NOT NULL | Parent order |
+| `product_id` | Integer | Foreign Key → `products.id`, NOT NULL | Purchased product |
+| `quantity` | Integer | NOT NULL, Default: 1 | Units ordered |
+| `unit_price` | Numeric(12, 2) | NOT NULL | Effective price at time of purchase |
+
+---
+
+### 3.6 `order_status_history`
+Audit trail of status changes with timestamps and optional notes.
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | History entry ID |
+| `order_id` | Integer | Foreign Key → `orders.id`, NOT NULL | Target order |
+| `status` | String(30) | NOT NULL | New status code |
+| `note` | String(300) | Nullable | Admin remark / tracking update |
+| `changed_at` | DateTime | NOT NULL, Default: UTC | Timestamp of state transition |
+
+---
+
+### 3.7 `payments`
+Tracks Razorpay transactions and Cash on Delivery records.
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Payment ID |
+| `order_id` | Integer | Foreign Key → `orders.id`, NOT NULL | Linked order |
+| `razorpay_order_id` | String(100) | Nullable, Indexed | Razorpay `order_...` ID |
+| `razorpay_payment_id` | String(100) | Nullable, Indexed | Razorpay `pay_...` ID |
+| `payment_signature` | String(255) | Nullable | Cryptographic HMAC SHA256 signature |
+| `payment_method` | String(50) | NOT NULL | `Razorpay` or `Cash on Delivery` |
+| `amount` | Numeric(12, 2) | NOT NULL | Payment amount |
+| `currency` | String(10) | NOT NULL, Default: `INR` | Currency code |
+| `payment_status` | String(30) | NOT NULL | `paid`, `pending`, `failed`, `refunded` |
+| `created_at` | DateTime | NOT NULL, Default: UTC | Payment record timestamp |
+
+---
+
+### 3.8 `coupons`
+Discount coupon codes with usage limits and expiry dates.
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Coupon ID |
+| `code` | String(50) | NOT NULL, Unique, Indexed | Promo code (e.g., `WELCOME10`) |
+| `description` | String(200) | Nullable | Display explanation |
+| `coupon_type` | String(20) | NOT NULL, Default: `percentage` | `percentage` or `fixed` |
+| `discount_value` | Numeric(10, 2) | NOT NULL | % discount or flat ₹ value |
+| `minimum_purchase` | Numeric(10, 2) | NOT NULL, Default: 0 | Min cart total needed |
+| `max_discount` | Numeric(10, 2) | Nullable | Upper limit cap for percentage type |
+| `usage_limit` | Integer | Nullable | Total redemption cap (`None` = unlimited) |
+| `used_count` | Integer | NOT NULL, Default: 0 | Count of successful redemptions |
+| `is_active` | Boolean | NOT NULL, Default: `True` | Active toggle |
+| `expires_at` | DateTime | Nullable | Expiration timestamp |
+| `created_at` | DateTime | NOT NULL, Default: UTC | Created date |
+
+---
+
+### 3.9 `promotions`, `promotion_products`, `promotion_categories`
+Automated marketing campaigns with category or product coverage.
+
+- **`promotions`**: `id`, `name`, `description`, `promo_type`, `discount_value`, `max_discount`, `start_date`, `end_date`, `usage_limit`, `used_count`, `is_active`, `created_at`
+- **`promotion_products`**: Link table mapping `promotion_id` to `product_id`.
+- **`promotion_categories`**: Link table mapping `promotion_id` to `category` name.
+
+---
+
+### 3.10 `flash_sales`
+High-discount countdown sales tied to individual products.
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Flash sale ID |
+| `product_id` | Integer | Foreign Key → `products.id`, NOT NULL | Discounted product |
+| `discount_value` | Numeric(10, 2) | NOT NULL | Discount percentage (e.g. 25.00) |
+| `start_time` | DateTime | NOT NULL | Sale start time (UTC) |
+| `end_time` | DateTime | NOT NULL | Sale end time (UTC) |
+| `created_at` | DateTime | NOT NULL, Default: UTC | Creation timestamp |
+
+---
+
+### 3.11 `wishlists` & `reviews`
+- **`wishlists`**: `id`, `user_id`, `product_id`, `created_at`. Unique per `(user_id, product_id)`.
+- **`reviews`**: `id`, `user_id`, `product_id`, `rating` (1-5), `review_text`, `created_at`.
+
+---
+
+### 3.12 `contacts`
+Customer inquiries and messages submitted through the Contact Us form.
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | Integer | Primary Key, Auto-increment | Contact ID |
+| `name` | String(100) | NOT NULL | Sender full name |
+| `email` | String(120) | NOT NULL | Sender email |
+| `subject` | String(200) | NOT NULL | Inquired subject |
+| `message` | Text | NOT NULL | Inquiry message body |
+| `is_read` | Boolean | NOT NULL, Default: `False` | Admin read indicator |
+| `created_at` | DateTime | NOT NULL, Default: UTC | Timestamp received |
